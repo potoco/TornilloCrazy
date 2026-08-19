@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.Data.SqlTypes;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataServicio.Tabla;
@@ -16,4 +17,11 @@ public class ProductoTbl
     [MaxLength(15)] public string? Codigo { get; set; }
     public int Cantidad { get; set; } = 0;
     public int Estado { get; set; } = 0;
+
+    public string? AtributosJson { get; set; }
+    public string? SinonimosJson { get; set; }
+    public string? TextoVectorial { get; set; }
+
+    [Column(TypeName = "vector(1536)")]
+    public SqlVector<float>? VectorEmbedding { get; set; }
 }

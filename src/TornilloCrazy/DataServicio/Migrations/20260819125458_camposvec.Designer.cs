@@ -5,6 +5,7 @@ using Microsoft.Data.SqlTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,9 +13,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataServicio.Migrations
 {
     [DbContext(typeof(FerreteriaDbContext))]
-    partial class FerreteriaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260819125458_camposvec")]
+    partial class camposvec
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,7 +58,7 @@ namespace DataServicio.Migrations
 
                     b.HasIndex("PersonaId");
 
-                    b.ToTable("Direccion", (string)null);
+                    b.ToTable("Direccion");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.EmailTbl", b =>
@@ -81,7 +84,7 @@ namespace DataServicio.Migrations
 
                     b.HasIndex("PersonaId");
 
-                    b.ToTable("Email", (string)null);
+                    b.ToTable("Email");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.LisPreProConfiguracionTbl", b =>
@@ -107,7 +110,7 @@ namespace DataServicio.Migrations
 
                     b.HasIndex("ListaPrecioProveedorId");
 
-                    b.ToTable("LisPreProConfiguracion", (string)null);
+                    b.ToTable("LisPreProConfiguracion");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.LisPreProDataTbl", b =>
@@ -158,7 +161,7 @@ namespace DataServicio.Migrations
 
                     b.HasIndex("ListaPrecioProveedorId");
 
-                    b.ToTable("LisPreProData", (string)null);
+                    b.ToTable("LisPreProData");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.ListaPrecioProveedorTbl", b =>
@@ -183,7 +186,7 @@ namespace DataServicio.Migrations
 
                     b.HasIndex("ProveedorId");
 
-                    b.ToTable("ListaPrecioProveedor", (string)null);
+                    b.ToTable("ListaPrecioProveedor");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.PersonaTbl", b =>
@@ -220,7 +223,7 @@ namespace DataServicio.Migrations
 
                     b.HasKey("PersonaId");
 
-                    b.ToTable("Persona", (string)null);
+                    b.ToTable("Persona");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.ProductoTbl", b =>
@@ -271,7 +274,7 @@ namespace DataServicio.Migrations
 
                     b.HasKey("ProductoId");
 
-                    b.ToTable("Producto", (string)null);
+                    b.ToTable("Producto");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.ProveedorTbl", b =>
@@ -295,7 +298,7 @@ namespace DataServicio.Migrations
 
                     b.HasIndex("PersonaId");
 
-                    b.ToTable("Proveedor", (string)null);
+                    b.ToTable("Proveedor");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.RubroFerreteriaTbl", b =>
@@ -312,7 +315,7 @@ namespace DataServicio.Migrations
 
                     b.HasKey("RubroFerreteriaId");
 
-                    b.ToTable("RubroFerreteria", (string)null);
+                    b.ToTable("RubroFerreteria");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.TelefonoTbl", b =>
@@ -338,7 +341,7 @@ namespace DataServicio.Migrations
 
                     b.HasIndex("PersonaId");
 
-                    b.ToTable("Telefono", (string)null);
+                    b.ToTable("Telefono");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.UsuarioTbl", b =>
@@ -369,7 +372,7 @@ namespace DataServicio.Migrations
 
                     b.HasIndex("PersonaId");
 
-                    b.ToTable("Usuario", (string)null);
+                    b.ToTable("Usuario");
                 });
 
             modelBuilder.Entity("ProveedorTblRubroFerreteriaTbl", b =>
