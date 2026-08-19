@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="AgenteUIProducto/AgenteUIProducto.csproj" />
+  <Project Path="DataServicio/DataServicio.csproj" Id="5c80d13c-9dc1-46d0-9904-1e17e1ace5d2" />
+  <Project Path="TornilloWeb/TornilloWeb.csproj" Id="64b4b888-356f-488e-8306-29d33eb8e202" />
+</Solution>
