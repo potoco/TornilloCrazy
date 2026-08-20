@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
+using TornilloWeb.Servicio;
 
 
 
@@ -85,12 +86,16 @@ public class ProveedorController : ControllerBase
             }
 
             // 4. Guardar registro en BD llamando al servicio compartido
-            var response = await _proveedorService.RegistrarListaPrecioAsync(
+            var responseListp = await _proveedorService.RegistrarListaPrecioAsync(
                 request.ProveedorId,
                 nombreArchivoGuid,
                 nombreArchivoOriginal);
-
-            return Ok(response);
+            if(responseListp != null && responseListp.ListaPrecioProveedorId > 0)
+            {
+                await ProcesarListaPrecio.Procesar(rutaDestino, responseListp);
+                //rutaDestino
+            }
+            return Ok(responseListp);
         }
         catch (KeyNotFoundException ex)
         {

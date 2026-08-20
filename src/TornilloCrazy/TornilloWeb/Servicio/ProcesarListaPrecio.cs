@@ -1,112 +1,30 @@
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
+using DataServicio.Servicio;
 using System.Data;
 using System.Text;
 
-namespace AgenteUIProducto;
+namespace TornilloWeb.Servicio;
 
-public partial class Form1 : Form
+public static class ProcesarListaPrecio
 {
-    private readonly string _rootPath;
-
-    public Form1()
+    private static ListaPrecioArchivoDto? _responseListp;
+    public static async Task Procesar(string filePath, ListaPrecioArchivoDto responseListp)
     {
-        InitializeComponent();
-        this.Load += Form1_Load;
-        _rootPath = ResolveProveedorRoot();
-    }
-
-    private void Form1_Load(object? sender, EventArgs e)
-    {
-        textBox1.Dock = DockStyle.Fill;
-        textBox2.Dock = DockStyle.Fill;
-        textBox2.BackColor = Color.WhiteSmoke;
+        _responseListp = responseListp;
+        var salidaCruda = BuildExcelCsv(filePath);
+        var salidaFiltrada = ProcesarCrudo(salidaCruda);
     }
 
 
-
-    private void menuCargarArchivos_Click(object sender, EventArgs e)
-    {
-        textBox1.Text = string.Empty;
-        textBox2.Text = string.Empty;
-        using var openFileDialog = new OpenFileDialog
-        {
-            Title = "Seleccionar archivo Excel",
-            Filter = "Archivos Excel (*.xls;*.xlsx)|*.xls;*.xlsx",
-            Multiselect = true,
-            RestoreDirectory = true
-        };
-
-        if (openFileDialog.ShowDialog(this) != DialogResult.OK)
-        {
-            return;
-        }
-
-        foreach (var filePath in openFileDialog.FileNames)
-        {
-            if (!IsExcelFile(filePath))
-            {
-                continue;
-            }
-
-            var directory = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrWhiteSpace(directory) && !Directory.Exists(_rootPath))
-            {
-                Directory.CreateDirectory(_rootPath);
-            }
-
-           // LoadDirectoryTree();
-            //LoadExcelFile(filePath);
-            var salidaCruda = BuildExcelCsv(filePath);
-            textBox1.Text = salidaCruda.ToString();
-
-            var salidaFiltrada = ProcesarCrudo(salidaCruda);
-            textBox2.Text = salidaFiltrada.ToString();
-
-            break;
-        }
-    }
-
-    private void treeViewArchivos_AfterSelect(object sender, TreeViewEventArgs e)
-    {
-        if (e.Node is null || e.Node.Tag is not string path || !File.Exists(path))
-        {
-            return;
-        }
-
-        if (IsExcelFile(path))
-        {
-            LoadExcelFile(path);
-        }
-    }
-
-    private void LoadDirectoryTree()
-    {
-
-        if (!Directory.Exists(_rootPath))
-        {
-            Directory.CreateDirectory(_rootPath);
-        }
-
-        var rootNode = new TreeNode("Data / Proveedor")
-        {
-            Tag = _rootPath,
-            Name = "root"
-        };
-
-        PopulateDirectoryNode(rootNode, _rootPath);
-        rootNode.Expand();
-    }
-
-
-    private StringBuilder ProcesarCrudo(StringBuilder crudo)
-    {
+    private static StringBuilder ProcesarCrudo(StringBuilder crudo)
+    { 
         var nueva = new StringBuilder();
         using var reader = new StringReader(crudo.ToString());
         string? linea;
 
         while ((linea = reader.ReadLine()) != null)
         {
-            var resultado = TextFilterHelper.ProcesarLineaValida(linea, precioMinimo: 50m, precioMaximo: 999_999m);
+            var resultado = TextFilterHelper.ProcesarLineaValida(linea, precioMinimo: 30m, precioMaximo: 999_999_999m);
             if (resultado != null)
                 nueva.AppendLine(string.Join(" ", resultado));
         }
@@ -114,45 +32,7 @@ public partial class Form1 : Form
         return nueva;
     }
 
-    private static void PopulateDirectoryNode(TreeNode node, string directoryPath)
-    {
-        foreach (var directory in Directory.GetDirectories(directoryPath).OrderBy(d => d, StringComparer.OrdinalIgnoreCase))
-        {
-            var directoryInfo = new DirectoryInfo(directory);
-            var childNode = new TreeNode(directoryInfo.Name)
-            {
-                Tag = directoryInfo.FullName,
-                Name = directoryInfo.Name
-            };
-
-            PopulateDirectoryNode(childNode, directoryInfo.FullName);
-
-            foreach (var file in Directory.GetFiles(directoryInfo.FullName).OrderBy(f => f, StringComparer.OrdinalIgnoreCase).Where(IsExcelFile))
-            {
-                childNode.Nodes.Add(new TreeNode(Path.GetFileName(file))
-                {
-                    Tag = file,
-                    Name = Path.GetFileName(file)
-                });
-            }
-
-            if (childNode.Nodes.Count > 0 || Directory.GetDirectories(directoryInfo.FullName).Length > 0)
-            {
-                node.Nodes.Add(childNode);
-            }
-        }
-
-        foreach (var file in Directory.GetFiles(directoryPath).OrderBy(f => f, StringComparer.OrdinalIgnoreCase).Where(IsExcelFile))
-        {
-            node.Nodes.Add(new TreeNode(Path.GetFileName(file))
-            {
-                Tag = file,
-                Name = Path.GetFileName(file)
-            });
-        }
-    }
-
-    private void LoadExcelFile(string filePath)
+    private static void LoadExcelFile(string filePath)
     {
         try
         {
@@ -161,7 +41,7 @@ public partial class Form1 : Form
 
             if (worksheet is null)
             {
-                MessageBox.Show("El archivo no contiene hojas de cálculo.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Console.WriteLine("El archivo no contiene hojas de cálculo.");
                 return;
             }
 
@@ -209,7 +89,7 @@ public partial class Form1 : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"No se pudo cargar el archivo Excel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Console.WriteLine($"No se pudo cargar el archivo Excel: {ex.Message}");
         }
     }
 
@@ -348,4 +228,7 @@ public partial class Form1 : Form
         Directory.CreateDirectory(fallback);
         return fallback;
     }
+
+
+
 }

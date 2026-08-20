@@ -20,6 +20,8 @@ public class ProductoTbl
 
     public string? AtributosJson { get; set; }
     public string? SinonimosJson { get; set; }
+    public string? UsosJson { get; set; }
+    public string? RubrosJson { get; set; }
     public string? TextoVectorial { get; set; }
 
     [Column(TypeName = "vector(1536)")]

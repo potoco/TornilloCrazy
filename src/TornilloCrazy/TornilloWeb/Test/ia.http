@@ -1,0 +1,46 @@
+@modeloA = "gpt-5.6-luna"
+@modeloB = "gpt-4o-mini-2024-07-18"
+@modeloC = "gpt-4.1-nano-2025-04-14"
+@modeloD = "gpt-5-nano-2025-08-07"
+@modelo = {{modeloA}}
+@apikey = nada
+
+
+
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+# listar modelos
+GET https://api.openai.com/v1/models
+Authorization: Bearer {{apikey}}
+
+
+###
+
+POST https://api.openai.com/v1/responses  HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{apikey}}
+  
+{
+  "model": {{modelo}},
+  "input": "Describe detalladamente este producto de ferretería [ABRAZADERA C/CREMALL REF12MM 60-80 ABRAZADERAS PERFECTO] y devuelve un JSON con: nombre_canonico, rubro (array de string), atributos (objeto: propiedad = valor), sinonimos (array de string), tipo de usos  (array de string)"
+}
+
+###
+
+POST https://api.openai.com/v1/chat/completions 
+Content-Type: application/json
+Authorization: Bearer {{apikey}}
+  
+{
+  "model": {{modelo}},
+  "response_format": { "type": "json_object" },
+  "messages": [
+    {
+      "role": "system",
+      "content": "Eres un asistente de catalogación de ferretería. Analiza cada producto de la lista enviada por el usuario y responde ÚNICAMENTE con un JSON que contenga una propiedad 'productos' con el array de productos normalizados. Cada elemento debe contener: id_temporal (number) con el número exacto del producto enviado, nombre_canonico (string), rubro (array de string), atributos (objeto: propiedad = valor), sinonimos (array de string), tipo de usos  (array de string)"
+    },
+    {
+      "role": "user",
+      "content" :"1. ABRAZADERA C/CREMALL REF12MM 60-80 ABRAZADERAS PERFECTO\n2. ADAPTADOR TANQUE FUSION 20 IPS." 
+    }
+  ]
+}
