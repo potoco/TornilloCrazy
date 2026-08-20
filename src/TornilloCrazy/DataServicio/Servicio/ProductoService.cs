@@ -1,5 +1,6 @@
 ﻿namespace DataServicio.Servicio;
 
-internal class ProductoService
+public class ProductoService
 {
+
 }

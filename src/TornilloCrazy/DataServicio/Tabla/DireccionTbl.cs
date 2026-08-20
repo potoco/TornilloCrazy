@@ -23,6 +23,6 @@ public class DireccionTbl
     public string? Depto { get; set; }
 
     public int PersonaId { get; set; }
-    public PersonaTbl Persona { get; set; } = new();
+    public PersonaTbl Persona { get; set; } = null!;
 
 }

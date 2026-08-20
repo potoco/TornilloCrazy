@@ -16,7 +16,7 @@ public class ProveedorTbl
     public int ProveedorId { get; set; }
     public int Estado { get; set; } = 0;
     public int PersonaId { get; set; }
-    public PersonaTbl Persona { get; set; } = new();
+    public PersonaTbl Persona { get; set; } = null!;
     public string? Observaciones { get; set; }
     public ICollection<RubroFerreteriaTbl> Rubros { get; set; } = new List<RubroFerreteriaTbl>();
 }

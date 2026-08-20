@@ -1,0 +1,33 @@
+### Configuración de Variables de Entorno
+@baseUrl = https://localhost:7030
+@contentType = application/json
+
+############################################################
+# 1. Crear un Nuevo Proveedor
+############################################################
+POST {{baseUrl}}/api/proveedores
+Content-Type: {{contentType}}
+
+{
+  "cuit": "30-435345-8",
+  "razonSocial": "muy buena empresa SA"
+}
+
+###
+
+############################################################
+# 2. Obtener Todos los Proveedores
+############################################################
+GET {{baseUrl}}/api/proveedores
+Accept: {{contentType}}
+
+###
+
+############################################################
+# 3. Obtener Proveedor por ID (Fijo)
+############################################################
+GET {{baseUrl}}/api/proveedores/1
+Accept: {{contentType}}
+
+###
+
