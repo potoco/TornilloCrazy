@@ -19,5 +19,8 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\DataServicio\DataServicio.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="AppData\Proveedores\" />
+	</ItemGroup>
 	
 </Project>

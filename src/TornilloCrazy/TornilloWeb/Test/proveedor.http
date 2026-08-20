@@ -29,5 +29,18 @@ Accept: {{contentType}}
 GET {{baseUrl}}/api/proveedores/1
 Accept: {{contentType}}
 
-###
+### Subir Lista de Precios de Proveedor
+@proveedorId = 3
+POST {{baseUrl}}/api/proveedores/lista-precio
+Content-Type: multipart/form-data; boundary=MyBoundary
 
+--MyBoundary
+Content-Disposition: form-data; name="ProveedorId"
+
+{{proveedorId}}
+--MyBoundary
+Content-Disposition: form-data; name="ArchivoExcel"; filename="ajajaj.xlsx"
+Content-Type: application/octet-stream
+
+< C:\SourceCode\fa.xlsx
+--MyBoundary--

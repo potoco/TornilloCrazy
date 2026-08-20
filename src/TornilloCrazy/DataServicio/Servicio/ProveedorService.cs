@@ -64,6 +64,39 @@ public class ProveedorService
                 p.Persona.Nombre))
             .FirstOrDefaultAsync();
     }
+
+    public async Task<ListaPrecioArchivoDto> RegistrarListaPrecioAsync(int proveedorId,string nombreArchivoGuid,string nombreArchivoOriginal)
+    {
+        var proveedorExiste = await _dbContext.Proveedores.AnyAsync(p => p.ProveedorId == proveedorId);
+        if (!proveedorExiste)
+            throw new KeyNotFoundException("Proveedor no encontrado.");
+
+        var registro = new ListaPrecioProveedorTbl
+        {
+            ProveedorId = proveedorId,
+            FecIngreso = DateTime.Now,
+            NombreArchivo = nombreArchivoGuid,
+            NombreArchivoOriginal = nombreArchivoOriginal
+        };
+
+        _dbContext.ListaPrecioProveedores.Add(registro);
+        await _dbContext.SaveChangesAsync();
+
+        return new ListaPrecioArchivoDto(
+            registro.ListaPrecioProveedorId,
+            proveedorId,
+            registro.FecIngreso,
+            registro.NombreArchivo,
+            registro.NombreArchivoOriginal);
+    }
+
 }
 
 public sealed record ProveedorDto(int ProveedorId, int PersonaId, string? CUIT, string RazonSocial);
+
+public sealed record ListaPrecioArchivoDto(
+    int ListaPrecioProveedorId,
+    int ProveedorId,
+    DateTime? FecIngreso,
+    string? NombreArchivo,
+    string? NombreArchivoOriginal);
