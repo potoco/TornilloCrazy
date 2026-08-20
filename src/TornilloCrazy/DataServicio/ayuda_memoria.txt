@@ -1,0 +1,2 @@
+﻿Add-Migration	mejorasCampos -Project DataServicio -StartupProject TornilloWeb
+Update-Database mejorasCampos -Project DataServicio -StartupProject TornilloWeb

@@ -13,6 +13,8 @@ public class ListaPrecioProveedorTbl
     public DateTime? FecIngreso { get; set; }
 
     [MaxLength(200)] public string? Comentario { get; set; }
+    [MaxLength(200)] public string? NombreArchivo { get; set; }
+    [MaxLength(200)] public string? NombreArchivoOriginal { get; set; }
 
     public int? ProveedorId { get; set; }
     public ProveedorTbl? Proveedor { get; set; }
