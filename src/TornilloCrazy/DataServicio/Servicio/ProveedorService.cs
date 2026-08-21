@@ -90,6 +90,28 @@ public class ProveedorService
             registro.NombreArchivoOriginal);
     }
 
+    public async Task AgregarItemPrecioAsync(int listaPrecioProveedorId, string descripcion, string lineaCruda)
+    {
+        if (listaPrecioProveedorId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(listaPrecioProveedorId), "La lista de precio es obligatoria.");
+
+        var listaExiste = await _dbContext.ListaPrecioProveedores
+            .AnyAsync(lp => lp.ListaPrecioProveedorId == listaPrecioProveedorId);
+
+        if (!listaExiste)
+            throw new KeyNotFoundException("La lista de precio no existe.");
+
+        var item = new LisPreProDataTbl
+        {
+            Descripcion1 = descripcion.Trim(),
+            LineaCruda = lineaCruda.Trim(),
+            ListaPrecioProveedorId = listaPrecioProveedorId
+        };
+
+        _dbContext.LisPreProData.Add(item);
+        await _dbContext.SaveChangesAsync();
+    }
+
 }
 
 public sealed record ProveedorDto(int ProveedorId, int PersonaId, string? CUIT, string RazonSocial);

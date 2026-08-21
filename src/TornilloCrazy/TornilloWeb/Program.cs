@@ -1,6 +1,7 @@
 using DataServicio;
 using DataServicio.Servicio;
 using Microsoft.EntityFrameworkCore;
+using TornilloWeb.Servicio;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<FerreteriaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<ProveedorService>();
+builder.Services.AddScoped<ProcesarListaPrecioServicio>();
+builder.Services.AddHostedService<LaburandoService>();
 
 var app = builder.Build();
 

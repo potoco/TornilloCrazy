@@ -26,10 +26,14 @@ Accept: {{contentType}}
 ############################################################
 # 3. Obtener Proveedor por ID (Fijo)
 ############################################################
-GET {{baseUrl}}/api/proveedores/1
+GET {{baseUrl}}/api/proveedores/3
 Accept: {{contentType}}
 
-### Subir Lista de Precios de Proveedor
+###
+
+############################################################
+# Subir Lista de Precios de Proveedor
+############################################################
 @proveedorId = 3
 POST {{baseUrl}}/api/proveedores/lista-precio
 Content-Type: multipart/form-data; boundary=MyBoundary
@@ -39,7 +43,7 @@ Content-Disposition: form-data; name="ProveedorId"
 
 {{proveedorId}}
 --MyBoundary
-Content-Disposition: form-data; name="ArchivoExcel"; filename="masdatos.xlsx"
+Content-Disposition: form-data; name="ArchivoExcel"; filename="preciosincreibles.xlsx"
 Content-Type: application/octet-stream
 
 < C:\SourceCode\fa.xlsx

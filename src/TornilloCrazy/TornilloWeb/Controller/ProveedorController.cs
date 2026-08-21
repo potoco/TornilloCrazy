@@ -16,6 +16,7 @@ public class ProveedorController : ControllerBase
     private readonly ProveedorService _proveedorService;
     private readonly IWebHostEnvironment _environment;
 
+
     public ProveedorController(ProveedorService proveedorService, IWebHostEnvironment environment)
     {
         _proveedorService = proveedorService;
@@ -90,11 +91,7 @@ public class ProveedorController : ControllerBase
                 request.ProveedorId,
                 nombreArchivoGuid,
                 nombreArchivoOriginal);
-            if(responseListp != null && responseListp.ListaPrecioProveedorId > 0)
-            {
-                await ProcesarListaPrecio.Procesar(rutaDestino, responseListp);
-                //rutaDestino
-            }
+
             return Ok(responseListp);
         }
         catch (KeyNotFoundException ex)

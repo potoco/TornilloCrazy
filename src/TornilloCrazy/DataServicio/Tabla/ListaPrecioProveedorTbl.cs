@@ -16,6 +16,8 @@ public class ListaPrecioProveedorTbl
     [MaxLength(200)] public string? NombreArchivo { get; set; }
     [MaxLength(200)] public string? NombreArchivoOriginal { get; set; }
 
+    public DateTime? FecProcesamiento { get; set; }
+
     public int? ProveedorId { get; set; }
     public ProveedorTbl? Proveedor { get; set; }
 
