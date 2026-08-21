@@ -4,20 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataServicio.Tabla;
 
-[Table("Producto")]
-public class ProductoTbl
+[Table("ProveedorMaestro")]
+public class ProveedorMaestroTbl
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int ProductoId { get; set; }
+    public int ProveedorMaestroId { get; set; }
     [MaxLength(200)] public string Nombre { get; set; } = "";
-    [MaxLength(50)] public string? RubroA { get; set; }
-    [MaxLength(50)] public string? RubroB { get; set; }
-    [MaxLength(50)] public string? RubroC { get; set; }
-    [MaxLength(15)] public string? Codigo { get; set; }
-    public int Cantidad { get; set; } = 0;
-    public int Estado { get; set; } = 0;
-
     public string? AtributosJson { get; set; }
     public string? SinonimosJson { get; set; }
     public string? UsosJson { get; set; }
@@ -26,4 +19,11 @@ public class ProductoTbl
 
     [Column(TypeName = "vector(1536)")]
     public SqlVector<float>? VectorEmbedding { get; set; }
+
+    public int ProveedorId { get; set; }
+    public ProveedorTbl Proveedor { get; set; } = null!;
+
+    public int ProductoId { get; set; }
+    public ProductoTbl Producto { get; set; } = null!;
+
 }

@@ -1,10 +1,14 @@
-﻿using DataServicio.Servicio;
+﻿using DataServicio.Migrations;
+using DataServicio.Servicio;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using System.Globalization;
+using System.Text;
 
 namespace TornilloWeb.Servicio;
 
 public class LaburandoService : BackgroundService
 {
+    const int _tiempoEspera = 2000; // Tiempo de espera en milisegundos (2 segundos)
     private readonly IServiceProvider _serviceProvider;
     public LaburandoService(IServiceProvider serviceProvider)
     {
@@ -15,7 +19,8 @@ public class LaburandoService : BackgroundService
         var formato = "dd/MM/yyyy";
         var cultura = CultureInfo.InvariantCulture;
         var tarea1 = ReActivar(ct => ProcesarListaPrecio(formato, cultura, ct), stoppingToken);
-        await Task.WhenAll(tarea1);
+        var tarea2 = ReActivar(ct => BuscarIADescripciones(formato, cultura, ct), stoppingToken);
+        await Task.WhenAll(tarea1, tarea2);
     }
 
     private async Task ReActivar(Func<CancellationToken, Task> revivir, CancellationToken ct)
@@ -37,21 +42,75 @@ public class LaburandoService : BackgroundService
 
     private async Task ProcesarListaPrecio(string formato, CultureInfo cultura, CancellationToken ct)
     {
-        int contador = 0;
+        using var sco = _serviceProvider.CreateAsyncScope();
+        var procesarListaPrecioServicio = sco.ServiceProvider.GetRequiredService<ProcesarListaPrecioServicio>();
+        var proveedorServicio = sco.ServiceProvider.GetRequiredService<ProveedorService>();
         while (!ct.IsCancellationRequested)
         {
-            using var sco = _serviceProvider.CreateAsyncScope();
-            var procesarListaPrecioServicio = sco.ServiceProvider.GetRequiredService<ProcesarListaPrecioServicio>();
-            var proveedorServicio = sco.ServiceProvider.GetRequiredService<ProveedorService>();
-
-            contador++;
-            if(contador == 3)
+            var listaSinProcesar = await proveedorServicio.ObtenerListaPrecioSinProcesarAsync();
+            if(listaSinProcesar == null || !listaSinProcesar.Any())
             {
-                contador = 0;
-                throw new Exception("El contador ha llegado a 3");
+                await Task.Delay(_tiempoEspera, ct);
+                continue;
             }
-            await Task.Delay(3000, ct); // Simulación de trabajo
+
+            // Obtener la primera lista de precios sin procesar
+            var listaProveedorDto = listaSinProcesar.FirstOrDefault();
+            if (listaProveedorDto == null)
+            {
+                await Task.Delay(_tiempoEspera, ct);
+                continue;
+            }
+            
+            int idPrecioLista = listaProveedorDto.ListaPrecioProveedorId;
+            int proveedorId = listaProveedorDto.ProveedorId ?? 0;   
+
+            var crudo = procesarListaPrecioServicio.BuildExcelCsv(listaProveedorDto.NombreArchivo, proveedorId);
+            var nueva = new StringBuilder();
+            using var reader = new StringReader(crudo.ToString());
+            string? linea;
+            bool seAgregaronLineas = false;
+            while ((linea = reader.ReadLine()) != null)
+            {
+                var resultado = TextFilterHelper.ProcesarLineaValida(linea, precioMinimo: 30m, precioMaximo: 999_999_999m);
+                if (resultado != null)
+                {
+                    await proveedorServicio.AgregarItemPrecioAsync(idPrecioLista, resultado.Descripcion, resultado.LineaCruda);
+                    await proveedorServicio.GuardarItemMaestroAsync(resultado.Descripcion, proveedorId);
+                    seAgregaronLineas = true;
+                }
+            }
+            if (seAgregaronLineas)
+            {
+                await proveedorServicio.MarcarListaPrecioComoProcesadaAsync(idPrecioLista);
+            }
+
+            await Task.Delay(_tiempoEspera, ct); // esperar 2 segundos antes de la siguiente iteración
         }
     }
+    private async Task BuscarIADescripciones(string formato, CultureInfo cultura, CancellationToken ct)
+    {
+        using var sco = _serviceProvider.CreateAsyncScope();
+        var proveedorServicio = sco.ServiceProvider.GetRequiredService<ProveedorService>();
+        while (!ct.IsCancellationRequested)
+        {
+            var preciosAprocesar = await proveedorServicio.ObtenerItemsPreciosSinProcesarAsync();
+            if (preciosAprocesar == null || !preciosAprocesar.Any())
+            {
+                await Task.Delay(_tiempoEspera, ct);
+                continue;
+            }
+
+            var lotes = preciosAprocesar.Chunk(6);
+            foreach (var loteActual in lotes)
+            {
+                await ClienteWebPotoco.BuscarDescripcionesIA_MENTIRA(loteActual.ToList());
+                await ClienteWebPotoco.CrearVector(loteActual.ToList());
+            }
+
+            await Task.Delay(_tiempoEspera, ct); // esperar 2 segundos antes de la siguiente iteración
+        }
+    }
+
 
 }

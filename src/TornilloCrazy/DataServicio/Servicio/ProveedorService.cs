@@ -112,6 +112,41 @@ public class ProveedorService
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task<List<ListaPrecioProveedorTbl>> ObtenerListaPrecioSinProcesarAsync()
+    {
+        return await _dbContext.ListaPrecioProveedores
+            .AsNoTracking()
+            .Where(item => item.FecProcesamiento == null)
+            .OrderBy(item => item.FecIngreso)
+            .ToListAsync();
+    }
+
+    public async Task MarcarListaPrecioComoProcesadaAsync(int idPrecioLista)
+    {
+        var lista = await _dbContext.ListaPrecioProveedores
+            .FirstOrDefaultAsync(lp => lp.ListaPrecioProveedorId == idPrecioLista);
+
+        if (lista == null)
+            throw new KeyNotFoundException("La lista de precio no existe.");
+
+        lista.FecProcesamiento = DateTime.Now;
+        await _dbContext.SaveChangesAsync();    
+    }
+
+    /*
+SELECT top 50 pp.* from [LisPreProData] pp
+where pp.EstadoRevisionIA=0
+order by LisPreProDataId
+     */
+    public async Task<List<LisPreProDataTbl>> ObtenerItemsPreciosSinProcesarAsync(int cantidad=50)
+    {
+        return await _dbContext.LisPreProData
+            .AsNoTracking()
+            .Where(item => item.EstadoRevisionIA == 0)
+            .OrderBy(item => item.LisPreProDataId)
+            .Take(cantidad)
+            .ToListAsync();
+    } 
 }
 
 public sealed record ProveedorDto(int ProveedorId, int PersonaId, string? CUIT, string RazonSocial);

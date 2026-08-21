@@ -5,6 +5,7 @@ using Microsoft.Data.SqlTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,9 +13,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataServicio.Migrations
 {
     [DbContext(typeof(FerreteriaDbContext))]
-    partial class FerreteriaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821190310_fecRevIa")]
+    partial class fecRevIa
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -154,9 +157,6 @@ namespace DataServicio.Migrations
                     b.Property<int?>("ListaPrecioProveedorId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductoId")
-                        .HasColumnType("int");
-
                     b.Property<double>("Valor1")
                         .HasColumnType("float");
 
@@ -169,8 +169,6 @@ namespace DataServicio.Migrations
                     b.HasKey("LisPreProDataId");
 
                     b.HasIndex("ListaPrecioProveedorId");
-
-                    b.HasIndex("ProductoId");
 
                     b.ToTable("LisPreProData");
                 });
@@ -270,7 +268,6 @@ namespace DataServicio.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Nombre")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -456,13 +453,7 @@ namespace DataServicio.Migrations
                         .WithMany("LisPreProData")
                         .HasForeignKey("ListaPrecioProveedorId");
 
-                    b.HasOne("DataServicio.Tabla.ProductoTbl", "Producto")
-                        .WithMany()
-                        .HasForeignKey("ProductoId");
-
                     b.Navigation("ListaPrecioProveedor");
-
-                    b.Navigation("Producto");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.ListaPrecioProveedorTbl", b =>

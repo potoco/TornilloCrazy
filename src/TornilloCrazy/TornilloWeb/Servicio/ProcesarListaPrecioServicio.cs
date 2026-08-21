@@ -1,4 +1,5 @@
-﻿using ClosedXML.Excel;
+﻿using Azure.Core;
+using ClosedXML.Excel;
 using DataServicio.Servicio;
 using System.Data;
 using System.Text;
@@ -7,46 +8,21 @@ namespace TornilloWeb.Servicio;
 
 public class ProcesarListaPrecioServicio
 {
-    private readonly ProveedorService _proveedorService;
+    private readonly IWebHostEnvironment _environment;
 
-    public ProcesarListaPrecioServicio(ProveedorService proveedorService)
+    public ProcesarListaPrecioServicio(IWebHostEnvironment environment)
     {
-        _proveedorService = proveedorService;
+        _environment = environment;
     }   
 
-    private void Procesar(string filePath, ListaPrecioArchivoDto responseListp)
+    public StringBuilder BuildExcelCsv(string fileName, int proveedorId)
     {
-        Task.Run(() => 
-        {
-            var salidaCruda = BuildExcelCsv(filePath);
-            PoblarListaPrecio(salidaCruda, responseListp);
-        });
-    }
-
-
-    private async Task PoblarListaPrecio(StringBuilder crudo, ListaPrecioArchivoDto listaProveedorDto)
-    {
-        var nueva = new StringBuilder();
-        using var reader = new StringReader(crudo.ToString());
-        string? linea;
-        int idPrecioLista = listaProveedorDto.ListaPrecioProveedorId;
-        while ((linea = reader.ReadLine()) != null)
-        {
-            var resultado = TextFilterHelper.ProcesarLineaValida(linea, precioMinimo: 30m, precioMaximo: 999_999_999m);
-            if (resultado != null)
-            {
-                await _proveedorService.AgregarItemPrecioAsync(idPrecioLista, resultado.Descripcion, resultado.LineaCruda);
-            }
-        }
-    }
-
-    private  StringBuilder BuildExcelCsv(string filePath)
-    {
+        var carpetaDestino = Path.Combine(_environment.ContentRootPath,"AppData","Proveedores",$"Proveedor-{proveedorId}", fileName);
         var csv = new StringBuilder();
 
         try
         {
-            using var workbook = new XLWorkbook(filePath);
+            using var workbook = new XLWorkbook(carpetaDestino);
             var worksheet = workbook.Worksheets.FirstOrDefault();
 
             if (worksheet is null)
@@ -140,16 +116,5 @@ public class ProcesarListaPrecioServicio
             _ => cell.GetFormattedString()
         };
     }
-    internal async Task<ListaPrecioArchivoDto?> GuardarAsync(string rutaDestino, string nombreArchivoGuid, string nombreArchivoOriginal, int proveedorId)
-    {
-        var responseListp = await _proveedorService.RegistrarListaPrecioAsync(
-            proveedorId,
-            nombreArchivoGuid,
-            nombreArchivoOriginal);
-        if (responseListp != null && responseListp.ListaPrecioProveedorId > 0)
-        {
-            Procesar(rutaDestino, responseListp);
-        }
-        return responseListp;
-    }
+
 }

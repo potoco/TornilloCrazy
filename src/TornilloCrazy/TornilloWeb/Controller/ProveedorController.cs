@@ -62,19 +62,14 @@ public class ProveedorController : ControllerBase
             return BadRequest(new { mensaje = "El archivo excel es obligatorio y no puede estar vacío." });
 
         var extension = Path.GetExtension(request.ArchivoExcel.FileName);
-        if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { mensaje = "Solo se permite archivo .xlsx" });
+        if (!string.Equals(extension, ".xlsx", StringComparison.OrdinalIgnoreCase) && !string.Equals(extension, ".xls", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { mensaje = "Solo se permite archivo .xlsx o .xls" });
 
         // 2. Preparar nombres y rutas físicas
         var nombreArchivoOriginal = Path.GetFileName(request.ArchivoExcel.FileName);
-        var nombreArchivoGuid = $"{Guid.NewGuid():N}.xlsx";
+        var nombreArchivoGuid = $"{Guid.NewGuid():N}{extension}";
 
-        var carpetaDestino = Path.Combine(
-            _environment.ContentRootPath,
-            "AppData",
-            "Proveedores",
-            $"Proveedor-{request.ProveedorId}");
-
+        var carpetaDestino = Path.Combine(_environment.ContentRootPath,"AppData","Proveedores",$"Proveedor-{request.ProveedorId}");
         Directory.CreateDirectory(carpetaDestino);
         var rutaDestino = Path.Combine(carpetaDestino, nombreArchivoGuid);
 
@@ -87,10 +82,7 @@ public class ProveedorController : ControllerBase
             }
 
             // 4. Guardar registro en BD llamando al servicio compartido
-            var responseListp = await _proveedorService.RegistrarListaPrecioAsync(
-                request.ProveedorId,
-                nombreArchivoGuid,
-                nombreArchivoOriginal);
+            var responseListp = await _proveedorService.RegistrarListaPrecioAsync(request.ProveedorId,nombreArchivoGuid,nombreArchivoOriginal);
 
             return Ok(responseListp);
         }

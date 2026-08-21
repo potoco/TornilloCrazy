@@ -1,2 +1,2 @@
-﻿Add-Migration fecProc -Project DataServicio -StartupProject TornilloWeb
-Update-Database fecProc -Project DataServicio -StartupProject TornilloWeb
+﻿Add-Migration fecRevIa -Project DataServicio -StartupProject TornilloWeb
+Update-Database fecRevIa -Project DataServicio -StartupProject TornilloWeb
