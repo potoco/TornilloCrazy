@@ -1,4 +1,6 @@
-﻿using DataServicio.Tabla;
+﻿using DataServicio.Modelo;
+using DataServicio.Tabla;
+using Microsoft.Data.SqlTypes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataServicio.Servicio;
@@ -159,13 +161,75 @@ public class ProveedorService
             await _dbContext.SaveChangesAsync();
         }
     }
+
+    public async Task ActualizaryMarcarComoProcesados(List<ProveedorMaestroTbl> proveedorMaestroTbls)
+    {
+        var ids = proveedorMaestroTbls.Select(x => x.ProveedorMaestroId).ToList();
+
+        var entidadesDb = await _dbContext.ProveedorMaestros
+            .Where(pm => ids.Contains(pm.ProveedorMaestroId))
+            .ToListAsync();
+
+        foreach (var entidad in entidadesDb)
+        {
+            var origen = proveedorMaestroTbls
+                .First(x => x.ProveedorMaestroId == entidad.ProveedorMaestroId);
+
+            entidad.EstadoRevisionIA = 2;
+            entidad.FechaRevisionIA = DateTime.Now;
+            entidad.NombreCanonico = origen.NombreCanonico;
+            entidad.RubrosJson = origen.RubrosJson;
+            entidad.AtributosJson = origen.AtributosJson;
+            entidad.SinonimosJson = origen.SinonimosJson;
+            entidad.UsosJson = origen.UsosJson;
+            entidad.JsonRaw = origen.JsonRaw;
+            entidad.TextoVectorial = origen.TextoVectorial;
+            entidad.VectorEmbedding = origen.VectorEmbedding;
+        }
+        await _dbContext.SaveChangesAsync();
+    }
+    public async Task MarcarItemsComoProcesados(List<ProveedorMaestroTbl> proveedorMaestroTbls)
+    {
+        var ids = proveedorMaestroTbls.Select(x => x.ProveedorMaestroId).ToList();
+
+        await _dbContext.ProveedorMaestros
+            .Where(pm => ids.Contains(pm.ProveedorMaestroId))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(pm => pm.EstadoRevisionIA, 2)
+                .SetProperty(pm => pm.FechaRevisionIA, DateTime.Now)
+            );
+    }
+    public async Task MarcarItemsEnProceso(List<ProveedorMaestroTbl> proveedorMaestroTbls)
+    {
+        var ids = proveedorMaestroTbls.Select(x => x.ProveedorMaestroId).ToList();
+
+        await _dbContext.ProveedorMaestros
+            .Where(pm => ids.Contains(pm.ProveedorMaestroId))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(pm => pm.EstadoRevisionIA, 1)
+            );
+    }
+
+    public async Task<List<CandidatoDuplicadoDto>> BuscarProductoProveedor(string textoUsuario, float[] textoUsuarioVectorial, int top = 5)
+    {
+        var vectorConsulta = new SqlVector<float>(textoUsuarioVectorial);
+        var candidatos = await _dbContext.ProveedorMaestros
+            .AsNoTracking()
+            .Where(p => p.VectorEmbedding != null)
+            .Select(p => new CandidatoDuplicadoDto
+            {
+                ProveedorId = p.ProveedorId,
+                NombreCanonico = p.NombreCanonico,
+                AtributosJson = p.AtributosJson,
+                // EF.Functions.VectorDistance traduce a VECTOR_DISTANCE('cosine', ...)
+                Distancia = EF.Functions.VectorDistance("cosine", p.VectorEmbedding.Value, vectorConsulta)
+            })
+            .OrderBy(c => c.Distancia)
+            .Take(top)
+            .ToListAsync();
+        return candidatos;
+
+    }
+
 }
 
-public sealed record ProveedorDto(int ProveedorId, int PersonaId, string? CUIT, string RazonSocial);
-
-public sealed record ListaPrecioArchivoDto(
-    int ListaPrecioProveedorId,
-    int ProveedorId,
-    DateTime? FecIngreso,
-    string? NombreArchivo,
-    string? NombreArchivoOriginal);

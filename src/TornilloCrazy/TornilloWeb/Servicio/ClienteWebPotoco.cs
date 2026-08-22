@@ -10,39 +10,10 @@ namespace TornilloWeb.Servicio;
 public static class ClienteWebPotoco
 {
     const string _apiKey = "sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg"; // Reemplaza con tu clave de API de OpenAI
-    /*
-POST https://api.openai.com/v1/chat/completions 
-Content-Type: application/json
-Authorization: Bearer sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg
-  
-{
-  "model": {{modelo}},
-  "response_format": { "type": "json_object" },
-  "messages": [
-    {
-      "role": "system",
-      "content": "Eres un asistente de catalogación de ferretería. Analiza cada producto de la lista enviada por el usuario y responde ÚNICAMENTE con un JSON que contenga una propiedad 'productos' con el array de productos normalizados. Cada elemento debe contener: id_temporal (number) con el número exacto del producto enviado, nombre_canonico (string), rubro (array de string), atributos (objeto: propiedad = valor), sinonimos (array de string), tipo de usos  (array de string)"
-    },
-    {
-      "role": "user",
-      "content" :"1. ABRAZADERA C/CREMALL REF12MM 60-80 ABRAZADERAS PERFECTO\n2. ADAPTADOR TANQUE FUSION 20 IPS\n3. ABRAZADERA C/CREMALL STD 9MM 12-22 ABRAZADERAS PERFECTO\n4. AEROSOL BRILL BLANCO 250 CC TESUAVE\n5. ADAPTADOR TANQUE FUSION 32 IPS\n6. AEROSOL BRILL BLANCO 440 CC TERSUAVE" 
-    }
-  ]
-}     
-     */
-
+    const string _modelo_embedding = "text-embedding-3-small";
+    const string _modelo_chat = "gpt-5.6-luna";
     public static async Task BuscarDescripcionesIA(List<ProveedorMaestroTbl> preciosRevisar)
     {
-
-
-        //string respuesta = await leerJsonStringDesdeDisco();
-        //if (respuesta == null || respuesta.Length == 0)
-        //{
-        //    respuesta = data.ToString();
-        //}
-        //var jsonA = await JsonSerializer.DeserializeAsync<JsonElement>(new MemoryStream(Encoding.UTF8.GetBytes(respuesta)));
-        //var contenidoTxt = jsonA.GetProperty("choices")[0].GetProperty("message").GetProperty("content");
-
 
 
         var nuevosProductosarevisar = string.Empty;
@@ -56,7 +27,7 @@ Authorization: Bearer sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg
 
         var request = new
         {
-            model = "gpt-5.6-luna",
+            model = _modelo_chat,
             response_format = new { type = "json_object"},
             messages = new[]
             {
@@ -103,40 +74,13 @@ Authorization: Bearer sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg
             preciosRevisar[id - 1].TextoVectorial = CrearTextoEmbeddingNarrativo(jsonProducto);
         }
     }
-    public static async Task BuscarDescripcionesIA_MENTIRA(List<ProveedorMaestroTbl> preciosRevisar)
-    {
-
-
-        string respuesta = await leerJsonStringDesdeDisco();
-        var json = await JsonSerializer.DeserializeAsync<JsonElement>(new MemoryStream(Encoding.UTF8.GetBytes(respuesta)));
-        var data = json.GetProperty("choices")[0].GetProperty("message").GetProperty("content");
-        var doc = JsonDocument.Parse(data.GetString());
-        var productos = doc.RootElement.GetProperty("productos");
-        foreach (var p in productos.EnumerateArray())
-        {
-            string jsonProducto = p.GetRawText();
-            string nombre = p.GetProperty("nombre_canonico").GetString();
-            string rubro = p.GetProperty("rubro").GetRawText();
-            string sinonimos = p.GetProperty("sinonimos").GetRawText();
-            string tipoDeUsos = p.GetProperty("tipo de usos").GetRawText();
-            string atributos = p.GetProperty("atributos").GetRawText();
-            int id = p.GetProperty("id_temporal").GetInt32();
-
-            preciosRevisar[id - 1].AtributosJson = atributos;
-            preciosRevisar[id - 1].RubrosJson = rubro;
-            preciosRevisar[id - 1].SinonimosJson = sinonimos;
-            preciosRevisar[id - 1].UsosJson = tipoDeUsos;
-            preciosRevisar[id - 1].NombreCanonico = nombre;
-            preciosRevisar[id - 1].TextoVectorial = CrearTextoEmbeddingNarrativo(jsonProducto);
-        }
-    }
 
     public static async Task CrearVector(List<ProveedorMaestroTbl> lisPreProDataTbls)
     {
         var inpusT = lisPreProDataTbls.OrderBy(x => x.ProveedorMaestroId).Select(x => x.TextoVectorial).ToArray();
         var request = new
         {
-            model = "text-embedding-3-small",
+            model = _modelo_embedding,
             input = inpusT
         };
 
@@ -182,64 +126,124 @@ Authorization: Bearer sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg
 
     }
 
-    private static async Task<string> leerJsonStringDesdeDisco()
+    public static async Task<float[]> CrearVectorBusquedaUsuarioAsync(string textoUsuario)
     {
-        string archivoTest = Path.Combine(AppContext.BaseDirectory, "AppData", "test.json");
-        var salida = await System.IO.File.ReadAllTextAsync(archivoTest);
-        return salida;  
+        var request = new
+        {
+            model = _modelo_embedding,
+            input = textoUsuario
+        };
+
+        using var httpClient = new HttpClient();
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/embeddings");
+        msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _apiKey);
+        msg.Content = JsonContent.Create(request);
+        var response = await httpClient.SendAsync(msg);
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var data = json.GetProperty("data")[0].GetProperty("embedding");
+        var list = new List<float>();
+        foreach (var v in data.EnumerateArray())
+            list.Add((float)v.GetDouble());
+        return list.ToArray();
     }
+
 
     private static string CrearTextoEmbeddingNarrativo(string jsonProducto)
     {
+        if (string.IsNullOrWhiteSpace(jsonProducto))
+            return string.Empty;
+
         using var doc = JsonDocument.Parse(jsonProducto);
         var root = doc.RootElement;
 
         var sb = new StringBuilder();
 
-        // Nombre del producto
+        // 1. Nombre del producto
         if (root.TryGetProperty("nombre_canonico", out var nombre))
         {
-            sb.AppendLine($"Producto: {nombre.GetString()}.");
-        }
-
-        // Atributos narrativos
-        if (root.TryGetProperty("atributos", out var atributos))
-        {
-            foreach (var attr in atributos.EnumerateObject())
+            var textoNombre = ValorComoTexto(nombre);
+            if (!string.IsNullOrWhiteSpace(textoNombre))
             {
-                sb.AppendLine($"{PrimeraMayus(attr.Name)}: {attr.Value.GetString()}.");
+                sb.AppendLine($"Producto: {textoNombre}.");
             }
         }
 
-        // Rubros
-        if (root.TryGetProperty("rubro", out var rubro))
+        // 2. Atributos (maneja números, strings y nulos de forma segura)
+        if (root.TryGetProperty("atributos", out var atributos) && atributos.ValueKind == JsonValueKind.Object)
         {
-            sb.Append("Pertenece a los rubros: ");
-            sb.AppendLine(string.Join(", ", rubro.EnumerateArray().Select(x => x.GetString())) + ".");
+            foreach (var attr in atributos.EnumerateObject())
+            {
+                var valor = ValorComoTexto(attr.Value);
+                if (!string.IsNullOrWhiteSpace(valor))
+                {
+                    sb.AppendLine($"{PrimeraMayus(attr.Name)}: {valor}.");
+                }
+            }
         }
 
-        // Sinónimos
-        if (root.TryGetProperty("sinonimos", out var sinonimos))
-        {
-            sb.Append("También conocido como: ");
-            sb.AppendLine(string.Join(", ", sinonimos.EnumerateArray().Select(x => x.GetString())) + ".");
-        }
+        // 3. Rubros (soporta si viene array o string único)
+        ProcesarSeccion(sb, "Pertenece a los rubros: ", root, "rubro");
 
-        // Usos
-        if (root.TryGetProperty("tipo de usos", out var usos))
-        {
-            sb.Append("Usos habituales: ");
-            sb.AppendLine(string.Join(", ", usos.EnumerateArray().Select(x => x.GetString())) + ".");
-        }
+        // 4. Sinónimos
+        ProcesarSeccion(sb, "También conocido como: ", root, "sinonimos");
+
+        // 5. Usos
+        ProcesarSeccion(sb, "Usos habituales: ", root, "tipo de usos");
 
         return sb.ToString().Trim();
     }
-
-    private static string PrimeraMayus(string texto)
+    private static void ProcesarSeccion(StringBuilder sb, string prefijo, JsonElement root, string propiedad)
     {
-        if (string.IsNullOrWhiteSpace(texto)) return texto;
-        return char.ToUpper(texto[0]) + texto.Substring(1);
+        if (!root.TryGetProperty(propiedad, out var elemento))
+            return;
+
+        var items = new List<string>();
+
+        if (elemento.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in elemento.EnumerateArray())
+            {
+                var txt = ValorComoTexto(item);
+                if (!string.IsNullOrWhiteSpace(txt))
+                    items.Add(txt);
+            }
+        }
+        else
+        {
+            // En caso de que la IA haya devuelto un string en lugar de un array
+            var txt = ValorComoTexto(elemento);
+            if (!string.IsNullOrWhiteSpace(txt))
+                items.Add(txt);
+        }
+
+        if (items.Count > 0)
+        {
+            sb.Append(prefijo);
+            sb.AppendLine(string.Join(", ", items) + ".");
+        }
     }
+    private static string? ValorComoTexto(JsonElement elemento)
+    {
+        return elemento.ValueKind switch
+        {
+            JsonValueKind.String => elemento.GetString()?.Trim(),
+            JsonValueKind.Number => elemento.GetRawText().Trim(),
+            JsonValueKind.True => "true",
+            JsonValueKind.False => "false",
+            JsonValueKind.Null or JsonValueKind.Undefined => null,
+            _ => elemento.GetRawText().Trim()
+        };
+    }
+    private static string PrimeraMayus(string clave)
+    {
+        if (string.IsNullOrEmpty(clave))
+            return clave;
+
+        var limpia = clave.Replace('_', ' ');
+        return string.Concat(char.ToUpperInvariant(limpia[0]), limpia[1..]);
+    }
+
 }
 
 
@@ -252,3 +256,8 @@ public class EmbeddingResponse
 {
     [JsonPropertyName("data")]      public List<EmbeddingData> Data { get; set; }
 }
+
+
+
+
+

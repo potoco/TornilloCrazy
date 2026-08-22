@@ -1,2 +1,2 @@
-﻿Add-Migration provMaestro2 -Project DataServicio -StartupProject TornilloWeb
-Update-Database fecRevIa -Project DataServicio -StartupProject TornilloWeb
+﻿Add-Migration pmJson -Project DataServicio -StartupProject TornilloWeb
+Update-Database pmJson -Project DataServicio -StartupProject TornilloWeb

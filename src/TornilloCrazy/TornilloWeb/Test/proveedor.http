@@ -43,8 +43,8 @@ Content-Disposition: form-data; name="ProveedorId"
 
 {{proveedorId}}
 --MyBoundary
-Content-Disposition: form-data; name="ArchivoExcel"; filename="queja15.xlsx"
+Content-Disposition: form-data; name="ArchivoExcel"; filename="lista420.xlsx"
 Content-Type: application/octet-stream
 
-< C:\SourceCode\fa_solo_6.xlsx
+< C:\SourceCode\fa.xlsx
 --MyBoundary--

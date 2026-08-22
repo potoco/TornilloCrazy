@@ -102,10 +102,24 @@ public class LaburandoService : BackgroundService
             }
 
             var lotes = preciosAprocesar.Chunk(6);
+            int totalLotes = lotes.Count();
             foreach (var loteActual in lotes)
             {
-                await ClienteWebPotoco.BuscarDescripcionesIA_MENTIRA(loteActual.ToList());
-                await ClienteWebPotoco.CrearVector(loteActual.ToList());
+                try
+                {
+                    await proveedorServicio.MarcarItemsEnProceso(loteActual.ToList());
+                    await Task.Delay(800, ct); // esperar 800 milisegundos antes de la siguiente iteración
+                    await ClienteWebPotoco.BuscarDescripcionesIA(loteActual.ToList());
+                    await Task.Delay(800, ct); // esperar 800 milisegundos antes de la siguiente iteración
+                    await ClienteWebPotoco.CrearVector(loteActual.ToList());
+                    await proveedorServicio.ActualizaryMarcarComoProcesados(loteActual.ToList());
+
+                }
+                catch (Exception ex)
+                {
+                    var s = ex.StackTrace;
+                    Console.WriteLine(s);
+                }
             }
 
             await Task.Delay(_tiempoEspera, ct); // esperar 2 segundos antes de la siguiente iteración

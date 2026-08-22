@@ -1,4 +1,5 @@
 ﻿using DataServicio.Servicio;
+using DataServicio.Modelo;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;

@@ -18,6 +18,7 @@ public class ProveedorMaestroTbl
     public string? UsosJson { get; set; }
     public string? RubrosJson { get; set; }
     public string? TextoVectorial { get; set; }
+    public string? JsonRaw { get; set; }    
 
     [Column(TypeName = "vector(1536)")]
     public SqlVector<float>? VectorEmbedding { get; set; }
@@ -32,8 +33,6 @@ public class ProveedorMaestroTbl
     /// </summary>
     public int EstadoRevisionIA { get; set; } = 0;
     public DateTime? FechaRevisionIA { get; set; } // Fecha de revisión por la IA
-
-
 
 
 

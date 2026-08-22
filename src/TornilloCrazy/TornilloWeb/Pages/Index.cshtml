@@ -5,6 +5,15 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <div class="display-6">Buscar elementos de la Ferreteria</div>
+    <form method="post">
+        <div class="input-group mb-3">
+            <input type="text" name="Buscar" class="form-control" placeholder="Buscar elementos de ferreteria" aria-label="Buscar elementos de ferreteria" aria-describedby="button-addon2">
+            <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Buscar</button>
+        </div>
+    </form>
+    @if (!string.IsNullOrEmpty(Model.Mensaje))
+    {
+        <p>@Model.Mensaje</p>
+    }
 </div>
