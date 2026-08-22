@@ -133,20 +133,32 @@ public class ProveedorService
         await _dbContext.SaveChangesAsync();    
     }
 
-    /*
-SELECT top 50 pp.* from [LisPreProData] pp
-where pp.EstadoRevisionIA=0
-order by LisPreProDataId
-     */
-    public async Task<List<LisPreProDataTbl>> ObtenerItemsPreciosSinProcesarAsync(int cantidad=50)
+
+    public async Task<List<ProveedorMaestroTbl>> ObtenerItemsProveedor(int cantidad=50)
     {
-        return await _dbContext.LisPreProData
+        return await _dbContext.ProveedorMaestros
             .AsNoTracking()
             .Where(item => item.EstadoRevisionIA == 0)
-            .OrderBy(item => item.LisPreProDataId)
+            .OrderBy(item => item.ProveedorMaestroId)
             .Take(cantidad)
             .ToListAsync();
-    } 
+    }
+
+    public async Task GuardarItemMaestroAsync(string descripcion, int proveedorId)
+    {
+        var existe = await _dbContext.ProveedorMaestros.AnyAsync(item => item.Descripcion1.ToLower() == descripcion.ToLower() && item.ProveedorId == proveedorId);
+        if (!existe)
+        {
+            var maestro = new ProveedorMaestroTbl
+            {
+                NombreCanonico = "",
+                Descripcion1 = descripcion.ToUpper().Trim(),
+                ProveedorId = proveedorId
+            };
+            _dbContext.ProveedorMaestros.Add(maestro);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
 }
 
 public sealed record ProveedorDto(int ProveedorId, int PersonaId, string? CUIT, string RazonSocial);

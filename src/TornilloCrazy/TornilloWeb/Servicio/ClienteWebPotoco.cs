@@ -31,7 +31,7 @@ Authorization: Bearer sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg
 }     
      */
 
-    public static async Task BuscarDescripcionesIA(List<LisPreProDataTbl> preciosRevisar)
+    public static async Task BuscarDescripcionesIA(List<ProveedorMaestroTbl> preciosRevisar)
     {
 
 
@@ -103,7 +103,7 @@ Authorization: Bearer sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg
             preciosRevisar[id - 1].TextoVectorial = CrearTextoEmbeddingNarrativo(jsonProducto);
         }
     }
-    public static async Task BuscarDescripcionesIA_MENTIRA(List<LisPreProDataTbl> preciosRevisar)
+    public static async Task BuscarDescripcionesIA_MENTIRA(List<ProveedorMaestroTbl> preciosRevisar)
     {
 
 
@@ -127,14 +127,13 @@ Authorization: Bearer sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg
             preciosRevisar[id - 1].SinonimosJson = sinonimos;
             preciosRevisar[id - 1].UsosJson = tipoDeUsos;
             preciosRevisar[id - 1].NombreCanonico = nombre;
-            preciosRevisar[id - 1].JsonRaw = jsonProducto;
             preciosRevisar[id - 1].TextoVectorial = CrearTextoEmbeddingNarrativo(jsonProducto);
         }
     }
 
-    public static async Task CrearVector(List<LisPreProDataTbl> lisPreProDataTbls)
+    public static async Task CrearVector(List<ProveedorMaestroTbl> lisPreProDataTbls)
     {
-        var inpusT = lisPreProDataTbls.OrderBy(x => x.LisPreProDataId).Select(x => x.TextoVectorial).ToArray();
+        var inpusT = lisPreProDataTbls.OrderBy(x => x.ProveedorMaestroId).Select(x => x.TextoVectorial).ToArray();
         var request = new
         {
             model = "text-embedding-3-small",

@@ -1,2 +1,2 @@
-﻿Add-Migration fecRevIa -Project DataServicio -StartupProject TornilloWeb
+﻿Add-Migration provMaestro2 -Project DataServicio -StartupProject TornilloWeb
 Update-Database fecRevIa -Project DataServicio -StartupProject TornilloWeb

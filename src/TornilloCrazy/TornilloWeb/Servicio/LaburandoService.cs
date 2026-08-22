@@ -94,7 +94,7 @@ public class LaburandoService : BackgroundService
         var proveedorServicio = sco.ServiceProvider.GetRequiredService<ProveedorService>();
         while (!ct.IsCancellationRequested)
         {
-            var preciosAprocesar = await proveedorServicio.ObtenerItemsPreciosSinProcesarAsync();
+            var preciosAprocesar = await proveedorServicio.ObtenerItemsProveedor();
             if (preciosAprocesar == null || !preciosAprocesar.Any())
             {
                 await Task.Delay(_tiempoEspera, ct);

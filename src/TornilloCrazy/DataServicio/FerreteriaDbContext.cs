@@ -16,7 +16,7 @@ public class FerreteriaDbContext(DbContextOptions<FerreteriaDbContext> options) 
     public DbSet<ProductoTbl> Productos => Set<ProductoTbl>();
     public DbSet<TelefonoTbl> Telefonos => Set<TelefonoTbl>();
     public DbSet<UsuarioTbl> Usuarios => Set<UsuarioTbl>();
-
+    public DbSet<ProveedorMaestroTbl> ProveedorMaestros => Set<ProveedorMaestroTbl>();  
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
