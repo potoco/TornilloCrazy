@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Data.SqlTypes;
-using DataServicio.Modelo;
+﻿using DataServicio.Modelo;
 using DataServicio.Tabla;
+using Microsoft.Data.SqlTypes;
+using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DataServicio.Servicio;
 
@@ -51,4 +52,127 @@ public class ProductoService
         await _context.SaveChangesAsync();
         return producto;
     }
+
+    async Task CrearProductoAsync_porlasdudasAca(List<ListaRevisionProductoMaestro> listaNuevo)
+    {
+        var ids = listaNuevo.Select(l => l.ProveedorMaestroId).ToHashSet();
+
+        var proveedores = await _context.ProveedorMaestros
+            .Where(p => ids.Contains(p.ProveedorMaestroId))
+            .ToListAsync();
+
+        foreach (var prov in proveedores) 
+        {
+        
+            var candidato = await _context.Productos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.VectorEmbedding != null &&
+                EF.Functions.VectorDistance("cosine", p.VectorEmbedding.Value, prov.VectorEmbedding.Value) <= 0.05 );
+
+            if(candidato != null)
+            {
+                var prd = new ProductoTbl
+                {
+                    Nombre = prov.NombreCanonico,
+                    AtributosJson = prov.AtributosJson,
+                    RubrosJson = prov.RubrosJson,
+                    UsosJson = prov.UsosJson,
+                    TextoVectorial = prov.TextoVectorial,
+                    SinonimosJson = prov.SinonimosJson,
+                    JsonRaw = prov.JsonRaw,
+                    VectorEmbedding = prov.VectorEmbedding
+                };
+                _context.Productos.AddRange(prd);
+                await _context.SaveChangesAsync(); // IDs generados aquí
+            }
+            if(!prov.ProductoId.HasValue)
+                prov.ProductoId = candidato.ProductoId;
+
+            var idSimilares = listaNuevo.FirstOrDefault(x => x.ProveedorMaestroId == prov.ProveedorId).ProveedorMaestroIdSimilares;
+            if (idSimilares != null && idSimilares.Any())
+            {
+                var proveedoresSimilares = await _context.ProveedorMaestros
+                    .Where(p => idSimilares.Contains(p.ProveedorMaestroId))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(pm => pm.ProductoId, candidato.ProductoId)
+                    );
+            }
+
+        }
+        await _context.SaveChangesAsync(); // IDs generados aquí
+    }
+
+
+    public async Task CrearProductoAsync(List<ListaRevisionProductoMaestro> listaNuevo)
+    {
+        var ids = listaNuevo.Select(l => l.ProveedorMaestroId).ToHashSet();
+
+        var proveedores = await _context.ProveedorMaestros
+            .Where(p => ids.Contains(p.ProveedorMaestroId))
+            .ToListAsync();
+
+        foreach (var prov in proveedores)
+        {
+            // 1) Buscar candidato similar
+            var candidato = await _context.Productos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p =>
+                    p.VectorEmbedding != null &&
+                    prov.VectorEmbedding != null &&
+                    EF.Functions.VectorDistance("cosine", p.VectorEmbedding.Value, prov.VectorEmbedding.Value) <= 0.05
+                );
+
+            ProductoTbl productoFinal;
+
+            // 2) Si NO hay candidato → crear producto nuevo
+            if (candidato == null)
+            {
+                productoFinal = new ProductoTbl
+                {
+                    Nombre = prov.NombreCanonico,
+                    AtributosJson = prov.AtributosJson,
+                    RubrosJson = prov.RubrosJson,
+                    UsosJson = prov.UsosJson,
+                    TextoVectorial = prov.TextoVectorial,
+                    SinonimosJson = prov.SinonimosJson,
+                    JsonRaw = prov.JsonRaw,
+                    VectorEmbedding = prov.VectorEmbedding
+                };
+
+                // EF Core generará el ID cuando hagamos SaveChanges
+                prov.Producto = productoFinal;
+            }
+            else
+            {
+                // Reutilizamos el producto existente
+                productoFinal = candidato;
+
+                // Asignamos el ID existente
+                prov.ProductoId = candidato.ProductoId;
+            }
+            prov.FechaSeleccionProducto = DateTime.Now;
+        }
+        await _context.SaveChangesAsync();
+
+        foreach (var prov in proveedores)
+        {
+            // 3) Asignar producto a proveedores similares
+            var similares = listaNuevo
+                .FirstOrDefault(x => x.ProveedorMaestroId == prov.ProveedorMaestroId)?
+                .ProveedorMaestroIdSimilares;
+
+            if (similares != null && similares.Any())
+            {
+                await _context.ProveedorMaestros
+                    .Where(p => similares.Contains(p.ProveedorMaestroId))
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(pm => pm.ProductoId, prov.ProductoId)
+                        .SetProperty(pm => pm.FechaSeleccionProducto, prov.FechaSeleccionProducto)
+                    );
+            }
+        }
+    }
+
+
+
 }

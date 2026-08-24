@@ -33,6 +33,7 @@ public class ProveedorMaestroTbl
     /// </summary>
     public int EstadoRevisionIA { get; set; } = 0;
     public DateTime? FechaRevisionIA { get; set; } // Fecha de revisión por la IA
+    public DateTime? FechaSeleccionProducto { get; set; } // Fecha de selección del producto
 
 
 

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+  <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm15 2H1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM1 3h14V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1z"/>
+  <path d="M5 0v16h1V0zM10 0v16h1V0zM0 8h16v1H0z"/>
+</svg>

@@ -231,5 +231,27 @@ public class ProveedorService
 
     }
 
+    public async Task<List<ListaRevisionProductoMaestro>> ObtenerItemsSinRevevisionParaMaestro()
+    {
+        var candidatos = await _dbContext.ProveedorMaestros
+            .AsNoTracking()
+            .Where(p => p.FechaSeleccionProducto == null)
+            .Select(p => new ListaRevisionProductoMaestro(
+                p.ProveedorMaestroId,
+                p.VectorEmbedding.Value,
+                new List<int>() // Aquí puedes agregar la lógica para obtener los IdSimilares si es necesario
+            ))
+            .ToListAsync();
+        return candidatos;
+    }
+
+    public async Task ActualizarListaProveedorMaestroRevisada(List<int> listaIdParaActualizar)
+    {
+        await _dbContext.ProveedorMaestros
+            .Where(pm => listaIdParaActualizar.Contains(pm.ProveedorMaestroId))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(pm => pm.FechaSeleccionProducto, DateTime.Now)
+            );
+    }
 }
 

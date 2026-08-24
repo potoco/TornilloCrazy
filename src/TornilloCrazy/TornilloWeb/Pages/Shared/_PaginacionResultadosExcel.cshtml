@@ -1,0 +1,26 @@
+@model TornilloWeb.Pages.CargarExcelModel.PaginacionExcelModel
+
+<div class="card-body border-top d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+    <small class="text-muted">
+        Página @Model.CurrentPage de @Model.TotalPages
+    </small>
+
+    <nav aria-label="Paginación de resultados">
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item @(!Model.HasPrevious ? "disabled" : null)">
+                <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@(Model.CurrentPage - 1)">Anterior</a>
+            </li>
+
+            @foreach (var pageNum in Model.PaginasVisibles)
+            {
+                <li class="page-item @(pageNum == Model.CurrentPage ? "active" : null)">
+                    <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@pageNum">@pageNum</a>
+                </li>
+            }
+
+            <li class="page-item @(!Model.HasNext ? "disabled" : null)">
+                <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@(Model.CurrentPage + 1)">Siguiente</a>
+            </li>
+        </ul>
+    </nav>
+</div>

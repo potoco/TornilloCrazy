@@ -1,6 +1,8 @@
 ﻿using DataServicio.Migrations;
+using DataServicio.Modelo;
 using DataServicio.Servicio;
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Text;
 
@@ -20,7 +22,8 @@ public class LaburandoService : BackgroundService
         var cultura = CultureInfo.InvariantCulture;
         var tarea1 = ReActivar(ct => ProcesarListaPrecio(formato, cultura, ct), stoppingToken);
         var tarea2 = ReActivar(ct => BuscarIADescripciones(formato, cultura, ct), stoppingToken);
-        await Task.WhenAll(tarea1, tarea2);
+        var tarea3 = ReActivar(ct => BuscarMaestro(formato, cultura, ct), stoppingToken);
+        await Task.WhenAll(tarea1, tarea2, tarea3);
     }
 
     private async Task ReActivar(Func<CancellationToken, Task> revivir, CancellationToken ct)
@@ -48,7 +51,7 @@ public class LaburandoService : BackgroundService
         while (!ct.IsCancellationRequested)
         {
             var listaSinProcesar = await proveedorServicio.ObtenerListaPrecioSinProcesarAsync();
-            if(listaSinProcesar == null || !listaSinProcesar.Any())
+            if (listaSinProcesar == null || !listaSinProcesar.Any())
             {
                 await Task.Delay(_tiempoEspera, ct);
                 continue;
@@ -61,9 +64,9 @@ public class LaburandoService : BackgroundService
                 await Task.Delay(_tiempoEspera, ct);
                 continue;
             }
-            
+
             int idPrecioLista = listaProveedorDto.ListaPrecioProveedorId;
-            int proveedorId = listaProveedorDto.ProveedorId ?? 0;   
+            int proveedorId = listaProveedorDto.ProveedorId ?? 0;
 
             var crudo = procesarListaPrecioServicio.BuildExcelCsv(listaProveedorDto.NombreArchivo, proveedorId);
             var nueva = new StringBuilder();
@@ -125,6 +128,46 @@ public class LaburandoService : BackgroundService
             await Task.Delay(_tiempoEspera, ct); // esperar 2 segundos antes de la siguiente iteración
         }
     }
+    private async Task BuscarMaestro(string formato, CultureInfo cultura, CancellationToken ct) 
+    {
+        using var sco = _serviceProvider.CreateAsyncScope();
+        var proveedorServicio = sco.ServiceProvider.GetRequiredService<ProveedorService>();
+        var productoServicio = sco.ServiceProvider.GetRequiredService<ProductoService>();
+        while (!ct.IsCancellationRequested)
+        {
+            var itemPreciosSinRevisar = await proveedorServicio.ObtenerItemsSinRevevisionParaMaestro();
+            if (itemPreciosSinRevisar == null || !itemPreciosSinRevisar.Any())
+            {
+                await Task.Delay(_tiempoEspera, ct);
+                continue; // No hay items sin revisar, continuar con la siguiente iteración
+            }
+            var listaIdParaActualizar = itemPreciosSinRevisar.Select(x => x.ProveedorMaestroId).ToList();
+            var nuevoMaestro = new List<ListaRevisionProductoMaestro>();
+            while (itemPreciosSinRevisar.Count > 0)
+            {
+                // 1. Tomar el elemento representante del grupo
+                var item = itemPreciosSinRevisar[0];
+                itemPreciosSinRevisar.RemoveAt(0);
 
+                // 2. Buscar todos los que son casi idénticos (>= 0.95)
+                var similares = itemPreciosSinRevisar
+                    .Where(z => VectorHelper.Similitud(z.Vector, item.Vector) >= 0.95f)
+                    .Select(x=>x.ProveedorMaestroId).ToList();
+                if(similares != null && similares.Count > 0)
+                {
+                    item.ProveedorMaestroIdSimilares.AddRange(similares);
+                    foreach (var sim in similares)
+                    {
+                        itemPreciosSinRevisar.RemoveAll(x => x.ProveedorMaestroId == sim)   ;
+                    }
 
+                }
+                nuevoMaestro.Add(item);
+            }
+            if (nuevoMaestro.Count > 0)
+            {
+                await productoServicio.CrearProductoAsync(nuevoMaestro);
+            }
+        }
+    }
 }

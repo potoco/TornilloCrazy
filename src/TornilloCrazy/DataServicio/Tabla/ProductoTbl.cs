@@ -26,4 +26,6 @@ public class ProductoTbl
 
     [Column(TypeName = "vector(1536)")]
     public SqlVector<float>? VectorEmbedding { get; set; }
+    public string? JsonRaw { get; set; }
+
 }

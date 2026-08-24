@@ -1,9 +1,7 @@
-
-
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace AgenteUIProducto;
+namespace AgenteUIProducto.Helper;
 public record ProductoDetectado(
     string? Codigo,
     string Descripcion,

@@ -1,3 +1,4 @@
+using AgenteUIProducto.Helper;
 using ClosedXML.Excel;
 using System.Data;
 using System.Text;
@@ -31,7 +32,7 @@ public partial class Form1 : Form
         using var openFileDialog = new OpenFileDialog
         {
             Title = "Seleccionar archivo Excel",
-            Filter = "Archivos Excel (*.xls;*.xlsx)|*.xls;*.xlsx",
+            Filter = "Archivos Excel (*.xls;*.xls)|*.xlsx;*.xlsx",
             Multiselect = true,
             RestoreDirectory = true
         };
@@ -54,12 +55,18 @@ public partial class Form1 : Form
                 Directory.CreateDirectory(_rootPath);
             }
 
-           // LoadDirectoryTree();
+            // LoadDirectoryTree();
             //LoadExcelFile(filePath);
-            var salidaCruda = BuildExcelCsv(filePath);
+            var salidaCruda = BuildFromExcel.ConstruirItemsDesdeExcel(filePath);  // BuildExcelCsv(filePath);
             textBox1.Text = salidaCruda.ToString();
 
-            var salidaFiltrada = ProcesarCrudo(salidaCruda);
+            //var salidaFiltrada = ProcesarCrudo(salidaCruda);
+
+            string salidaFiltrada = "";
+            foreach (var item in salidaCruda)
+            {
+                salidaFiltrada += item.ToString() + Environment.NewLine;
+            }
             textBox2.Text = salidaFiltrada.ToString();
 
             break;
@@ -242,6 +249,8 @@ public partial class Form1 : Form
                 return csv;
             }
 
+
+
             var headers = new List<string>();
             for (var i = 1; i <= maxColumnIndex; i++)
             {
@@ -256,18 +265,27 @@ public partial class Form1 : Form
 
             csv.AppendLine(string.Join(";", headers));
 
+
+
+
             for (var rowIndex = 1; rowIndex < rows.Count; rowIndex++)
             {
                 var row = rows[rowIndex];
                 var values = new List<string>();
 
-                for (var cellIndex = 0; cellIndex < headers.Count; cellIndex++)
+                for (var cellIndex = 0; cellIndex < maxColumnIndex; cellIndex++)
                 {
                     var cell = row.Cell(cellIndex + 1);
-                    values.Add(EscapeCsvValue(GetCellValue(cell)));
+                    string escapedValue = EscapeCsvValue(GetCellValue(cell));
+                    if(!string.IsNullOrEmpty(escapedValue))
+                    {
+                        values.Add(escapedValue);
+                    }
                 }
-
-                csv.AppendLine(string.Join(";", values));
+                if(values != null && values.Count > 0)
+                {
+                    csv.AppendLine(string.Join(";", values));
+                }
             }
 
             return csv;
@@ -288,11 +306,18 @@ public partial class Form1 : Form
 
         var text = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
 
-        if (text.Contains(';') || text.Contains('"') || text.Contains('\r') || text.Contains('\n'))
-        {
-            text = text.Replace("\"", "\"\"");
-            return $"\"{text}\"";
-        }
+        //if (text.Contains(';') || text.Contains('"') || text.Contains('\r') || text.Contains('\n'))
+        //{
+        //    text = text.Replace("\"", "\"\"");
+        //    return $"\"{text}\"";
+        //}
+
+        text = text.Replace(";", " ");
+        text = text.Replace("'", "");
+        text = text.Replace("\"", "");
+        text = text.Replace("\r", "");
+        text = text.Replace("\n", "");
+
 
         return text;
     }

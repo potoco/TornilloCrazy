@@ -1,2 +1,2 @@
-﻿Add-Migration pmJson -Project DataServicio -StartupProject TornilloWeb
+﻿Add-Migration masprop -Project DataServicio -StartupProject TornilloWeb
 Update-Database pmJson -Project DataServicio -StartupProject TornilloWeb

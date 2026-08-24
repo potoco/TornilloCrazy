@@ -14,6 +14,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<FerreteriaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<ProveedorService>();
+builder.Services.AddScoped<ProductoService>();
 builder.Services.AddScoped<ProcesarListaPrecioServicio>();
 builder.Services.AddHostedService<LaburandoService>();
 
