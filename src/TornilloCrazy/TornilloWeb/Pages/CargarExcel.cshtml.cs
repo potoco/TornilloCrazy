@@ -12,9 +12,12 @@ namespace TornilloWeb.Pages
             public string? LoteId { get; init; }
             public int CurrentPage { get; init; }
             public int TotalPages { get; init; }
+            public string? FiltroDescripcion { get; init; }
             public IEnumerable<int> PaginasVisibles { get; init; } = [];
+            public int DisplayCurrentPage => TotalPages == 0 ? 0 : CurrentPage;
             public bool HasPrevious => CurrentPage > 1;
             public bool HasNext => CurrentPage < TotalPages;
+            public bool MostrarNavegacion => TotalPages > 1;
         }
 
         private sealed class ResultadoExcelCache
@@ -43,6 +46,9 @@ namespace TornilloWeb.Pages
         [BindProperty(SupportsGet = true)]
         public int PageNumber { get; set; } = 1;
 
+        [BindProperty(SupportsGet = true)]
+        public string? FiltroDescripcion { get; set; }
+
         public List<ProductoFromExcelDto> Resultados { get; private set; } = [];
         public string? MensajeError { get; private set; }
         public string? MensajeExito { get; private set; }
@@ -50,6 +56,7 @@ namespace TornilloWeb.Pages
         public string? NombreArchivoGuardado { get; private set; }
         public int TotalItems { get; private set; }
         public int TotalPages { get; private set; }
+        public bool TieneResultadosProcesados { get; private set; }
 
         public int CurrentPage => PageNumber < 1 ? 1 : PageNumber;
         public bool TienePaginacion => TotalPages > 1;
@@ -76,6 +83,7 @@ namespace TornilloWeb.Pages
             LoteId = LoteId,
             CurrentPage = CurrentPage,
             TotalPages = TotalPages,
+            FiltroDescripcion = FiltroDescripcion,
             PaginasVisibles = PaginasVisibles
         };
 
@@ -129,6 +137,7 @@ namespace TornilloWeb.Pages
 
             LoteId = Guid.NewGuid().ToString("N");
             PageNumber = 1;
+            FiltroDescripcion = null;
 
             _memoryCache.Set(LoteId, new ResultadoExcelCache
             {
@@ -140,6 +149,7 @@ namespace TornilloWeb.Pages
                 SlidingExpiration = TimeSpan.FromMinutes(30)
             });
 
+            TieneResultadosProcesados = true;
             AplicarPaginacion(todosLosResultados);
             MensajeExito = $"Archivo cargado y procesado: {NombreArchivoGuardado}";
             return Page();
@@ -164,7 +174,24 @@ namespace TornilloWeb.Pages
                 ? "Archivo cargado y procesado."
                 : $"Archivo cargado y procesado: {NombreArchivoGuardado}";
 
-            AplicarPaginacion(cache.Items);
+            TieneResultadosProcesados = true;
+            var resultadosFiltrados = AplicarFiltroDescripcion(cache.Items);
+            AplicarPaginacion(resultadosFiltrados);
+        }
+
+        private List<ProductoFromExcelDto> AplicarFiltroDescripcion(List<ProductoFromExcelDto> items)
+        {
+            var filtro = (FiltroDescripcion ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(filtro))
+            {
+                return items;
+            }
+
+            return items
+                .Where(item => (item.Descripcion ?? [])
+                    .Any(d => !string.IsNullOrWhiteSpace(d.Descripcion)
+                        && d.Descripcion!.Contains(filtro, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
         }
 
         private void AplicarPaginacion(List<ProductoFromExcelDto> todos)

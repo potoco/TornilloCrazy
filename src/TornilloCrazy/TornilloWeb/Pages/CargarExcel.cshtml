@@ -52,125 +52,128 @@
                 <span class="fw-semibold">Resultados extraídos (@Model.TotalItems)</span>
             </div>
 
-            @if (Model.Resultados.Count > 0)
+            @if (Model.TieneResultadosProcesados)
             {
-                @if (Model.TienePaginacion)
+                <partial name="_PaginacionResultadosExcel" model="Model.Paginacion" />
+
+                @if (Model.Resultados.Count > 0)
                 {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Código</th>
+                                    <th scope="col">Descripción</th>
+                                    <th scope="col">Precio</th>
+                                    <th scope="col">Rubro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var i = 0; i < Model.Resultados.Count; i++)
+                                {
+                                    var item = Model.Resultados[i];
+                                    var codigos = item.Codigo ?? [];
+                                    var descripciones = item.Descripcion ?? [];
+                                    var precios = item.Precio ?? [];
+
+                                    <tr>
+                                        <td class="fw-semibold text-muted" style="font-size: 0.65rem; width: 1%; white-space: nowrap;">@(Model.StartRowNumber + i)</td>
+                                        <td>
+                                            @if (codigos.Count == 0)
+                                            {
+                                                <span>-</span>
+                                            }
+                                            else if (codigos.Count == 1)
+                                            {
+                                                <span>@codigos[0].Codigo</span>
+                                            }
+                                            else
+                                            {
+                                                <div>
+                                                    <div>@codigos[0].Codigo</div>
+                                                    <div class="dropdown mt-1">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Ver @((codigos.Count - 1)) más
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            @for (var c = 1; c < codigos.Count; c++)
+                                                            {
+                                                                <li><span class="dropdown-item-text">@codigos[c].Codigo <small class="text-muted">(@codigos[c].CeldaExcel)</small></span></li>
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (descripciones.Count == 0)
+                                            {
+                                                <span>-</span>
+                                            }
+                                            else if (descripciones.Count == 1)
+                                            {
+                                                <span>@descripciones[0].Descripcion</span>
+                                            }
+                                            else
+                                            {
+                                                <div>
+                                                    <div>@descripciones[0].Descripcion</div>
+                                                    <div class="dropdown mt-1">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Ver @((descripciones.Count - 1)) más
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            @for (var d = 1; d < descripciones.Count; d++)
+                                                            {
+                                                                <li><span class="dropdown-item-text">@descripciones[d].Descripcion <small class="text-muted">(@descripciones[d].CeldaExcel)</small></span></li>
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (precios.Count == 0)
+                                            {
+                                                <span>-</span>
+                                            }
+                                            else if (precios.Count == 1)
+                                            {
+                                                <span>@precios[0].Precio</span>
+                                            }
+                                            else
+                                            {
+                                                <div>
+                                                    <div>@precios[0].Precio</div>
+                                                    <div class="dropdown mt-1">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Ver @((precios.Count - 1)) más
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            @for (var p = 1; p < precios.Count; p++)
+                                                            {
+                                                                <li><span class="dropdown-item-text">@precios[p].Precio <small class="text-muted">(@precios[p].CeldaExcel)</small></span></li>
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>@(string.IsNullOrWhiteSpace(item.Rubro) ? "-" : item.Rubro)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
                     <partial name="_PaginacionResultadosExcel" model="Model.Paginacion" />
                 }
-
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Código</th>
-                                <th scope="col">Descripción</th>
-                                <th scope="col">Precio</th>
-                                <th scope="col">Rubro</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (var i = 0; i < Model.Resultados.Count; i++)
-                            {
-                                var item = Model.Resultados[i];
-                                var codigos = item.Codigo ?? [];
-                                var descripciones = item.Descripcion ?? [];
-                                var precios = item.Precio ?? [];
-
-                                <tr>
-                                    <td class="fw-semibold">@(Model.StartRowNumber + i)</td>
-                                    <td>
-                                        @if (codigos.Count == 0)
-                                        {
-                                            <span>-</span>
-                                        }
-                                        else if (codigos.Count == 1)
-                                        {
-                                            <span>@codigos[0].Codigo</span>
-                                        }
-                                        else
-                                        {
-                                            <div>
-                                                <div>@codigos[0].Codigo</div>
-                                                <div class="dropdown mt-1">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        Ver @((codigos.Count - 1)) más
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        @for (var c = 1; c < codigos.Count; c++)
-                                                        {
-                                                            <li><span class="dropdown-item-text">@codigos[c].Codigo <small class="text-muted">(@codigos[c].CeldaExcel)</small></span></li>
-                                                        }
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (descripciones.Count == 0)
-                                        {
-                                            <span>-</span>
-                                        }
-                                        else if (descripciones.Count == 1)
-                                        {
-                                            <span>@descripciones[0].Descripcion</span>
-                                        }
-                                        else
-                                        {
-                                            <div>
-                                                <div>@descripciones[0].Descripcion</div>
-                                                <div class="dropdown mt-1">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        Ver @((descripciones.Count - 1)) más
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        @for (var d = 1; d < descripciones.Count; d++)
-                                                        {
-                                                            <li><span class="dropdown-item-text">@descripciones[d].Descripcion <small class="text-muted">(@descripciones[d].CeldaExcel)</small></span></li>
-                                                        }
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (precios.Count == 0)
-                                        {
-                                            <span>-</span>
-                                        }
-                                        else if (precios.Count == 1)
-                                        {
-                                            <span>@precios[0].Precio</span>
-                                        }
-                                        else
-                                        {
-                                            <div>
-                                                <div>@precios[0].Precio</div>
-                                                <div class="dropdown mt-1">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        Ver @((precios.Count - 1)) más
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end">
-                                                        @for (var p = 1; p < precios.Count; p++)
-                                                        {
-                                                            <li><span class="dropdown-item-text">@precios[p].Precio <small class="text-muted">(@precios[p].CeldaExcel)</small></span></li>
-                                                        }
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>@(string.IsNullOrWhiteSpace(item.Rubro) ? "-" : item.Rubro)</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                @if (Model.TienePaginacion)
+                else
                 {
-                    <partial name="_PaginacionResultadosExcel" model="Model.Paginacion" />
+                    <div class="card-body text-muted">
+                        No hay resultados para el filtro aplicado.
+                    </div>
                 }
             }
             else

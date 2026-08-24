@@ -46,8 +46,8 @@ public sealed class ProductoFromExcelDto
 public static class BuildFromExcel
 {
     private static readonly string[] CodigoKeys = ["codigo", "articulo", "#", "sku", "cod"];
-    private static readonly string[] DescripcionKeys = ["descripcion", "producto", "titulo", "nombre", "detalle"];
-    private static readonly string[] PrecioKeys = ["precio", "total", "sub total", "neto", "bruto", "$", "lista"];
+    private static readonly string[] DescripcionKeys = ["descripcion", "producto", "titulo", "nombre", "detalle","descr", "des"];
+    private static readonly string[] PrecioKeys = ["precio", "total", "sub total", "neto", "bruto", "$", "lista","costo", "venta"];
     private static readonly string[] RubroKeys = ["rubro", "categoria", "familia", "linea"];
 
     private sealed class HeaderDetectionResult
@@ -63,7 +63,7 @@ public static class BuildFromExcel
         public List<int> AllCodigoColumns { get; init; } = [];
     }
 
-    public static ResponseGeneracionExcel ExtraerData(string filePath)
+    public static ResponseGeneracionExcel ExtraerData(string filePath )
     {
         var items = new ResponseGeneracionExcel();
 
@@ -131,35 +131,29 @@ public static class BuildFromExcel
                 }
 
                 // 2. PRECIOS (El principal detectado va en el índice [0])
-                var mainPriceCell = row.Cell(header.PrecioColumn.Value);
-                var mainPriceText = ObtenerTextoCelda(mainPriceCell);
-                if (!TryParseDecimalFlexible(mainPriceText, out _))
-                {
-                    continue; // Debe tener al menos el precio principal
-                }
+                var candidatePriceColumns = new List<int> { header.PrecioColumn.Value };
+                candidatePriceColumns.AddRange(header.AllPrecioColumns.Where(c => c != header.PrecioColumn.Value));
 
-                var listaPrecios = new List<ProductoFromExcelDto.PrecioExcelDto>
-                {
-                    new()
-                    {
-                        Precio = mainPriceText,
-                        CeldaExcel = mainPriceCell.Address.ToString()
-                    }
-                };
+                var listaPrecios = new List<ProductoFromExcelDto.PrecioExcelDto>();
 
-                // Otras columnas de precio/moneda encontradas en la cabecera
-                foreach (var colIndex in header.AllPrecioColumns.Where(c => c != header.PrecioColumn.Value))
+                foreach (var colIndex in candidatePriceColumns.Distinct())
                 {
-                    var extraCell = row.Cell(colIndex);
-                    var extraPriceText = ObtenerTextoCelda(extraCell);
-                    if (TryParseDecimalFlexible(extraPriceText, out _))
+                    var priceCell = row.Cell(colIndex);
+                    var priceText = ObtenerTextoCelda(priceCell);
+
+                    if (TryGetPrecioValido(priceText, out var parsedPrice) && parsedPrice >= 1m)
                     {
                         listaPrecios.Add(new ProductoFromExcelDto.PrecioExcelDto
                         {
-                            Precio = extraPriceText,
-                            CeldaExcel = extraCell.Address.ToString()
+                            Precio = priceText,
+                            CeldaExcel = priceCell.Address.ToString()
                         });
                     }
+                }
+
+                if (listaPrecios.Count == 0)
+                {
+                    continue; // Debe tener al menos un precio válido >= 1
                 }
 
                 // 3. CÓDIGOS (El principal en [0], luego adicionales si los hubiera)
@@ -210,6 +204,16 @@ public static class BuildFromExcel
             }
 
             items.Exito = true;
+
+            // Ordenar la salida por descripción principal y luego por precio principal
+            if (items.Salida != null)
+            {
+                items.Salida = items.Salida
+                    .OrderBy(p => p.Descripcion?.FirstOrDefault()?.Descripcion)
+                    .ThenBy(p => p.Precio?.FirstOrDefault()?.Precio)
+                    .ToList();
+            }
+
             return items;
         }
         catch (Exception ex)
@@ -371,5 +375,15 @@ public static class BuildFromExcel
 
         var normalized = text.Replace(".", "").Replace(",", ".");
         return decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static bool TryGetPrecioValido(string input, out decimal precio)
+    {
+        if (!TryParseDecimalFlexible(input, out precio))
+        {
+            return false;
+        }
+
+        return precio >= 1m;
     }
 }

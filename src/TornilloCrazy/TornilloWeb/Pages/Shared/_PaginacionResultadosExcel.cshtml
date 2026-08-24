@@ -2,25 +2,38 @@
 
 <div class="card-body border-top d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
     <small class="text-muted">
-        Página @Model.CurrentPage de @Model.TotalPages
+        Página @Model.DisplayCurrentPage de @Model.TotalPages
     </small>
 
-    <nav aria-label="Paginación de resultados">
-        <ul class="pagination pagination-sm mb-0">
-            <li class="page-item @(!Model.HasPrevious ? "disabled" : null)">
-                <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@(Model.CurrentPage - 1)">Anterior</a>
-            </li>
+    <form method="get" class="mb-0">
+        <input type="hidden" name="loteId" value="@Model.LoteId" />
+        <input type="hidden" name="pageNumber" value="1" />
+        <div class="input-group">
+            <input type="text" name="filtroDescripcion" class="form-control" placeholder="Buscar descripción" aria-label="Buscar descripción de los articulos del proveedor" value="@Model.FiltroDescripcion">
+            <button class="btn btn-outline-secondary" type="submit" title="Buscar"><i class="bi bi-search"></i></button>
+            <a class="btn btn-outline-secondary" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="1" title="Limpiar filtro"><i class="bi bi-trash3"></i></a>
+        </div>
+    </form>
 
-            @foreach (var pageNum in Model.PaginasVisibles)
-            {
-                <li class="page-item @(pageNum == Model.CurrentPage ? "active" : null)">
-                    <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@pageNum">@pageNum</a>
+    @if (Model.MostrarNavegacion)
+    {
+        <nav aria-label="Paginación de resultados">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item @(!Model.HasPrevious ? "disabled" : null)">
+                    <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@(Model.CurrentPage - 1)" asp-route-filtroDescripcion="@Model.FiltroDescripcion">Anterior</a>
                 </li>
-            }
 
-            <li class="page-item @(!Model.HasNext ? "disabled" : null)">
-                <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@(Model.CurrentPage + 1)">Siguiente</a>
-            </li>
-        </ul>
-    </nav>
+                @foreach (var pageNum in Model.PaginasVisibles)
+                {
+                    <li class="page-item @(pageNum == Model.CurrentPage ? "active" : null)">
+                        <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@pageNum" asp-route-filtroDescripcion="@Model.FiltroDescripcion">@pageNum</a>
+                    </li>
+                }
+
+                <li class="page-item @(!Model.HasNext ? "disabled" : null)">
+                    <a class="page-link" asp-page="/CargarExcel" asp-route-loteId="@Model.LoteId" asp-route-pageNumber="@(Model.CurrentPage + 1)" asp-route-filtroDescripcion="@Model.FiltroDescripcion">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+    }
 </div>
