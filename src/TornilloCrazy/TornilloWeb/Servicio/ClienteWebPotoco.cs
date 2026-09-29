@@ -1,90 +1,161 @@
 ﻿using Azure;
 using DataServicio.Tabla;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Data.SqlTypes;
+using Serilog;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace TornilloWeb.Servicio;
 
-public static class ClienteWebPotoco
+public class ClienteWebPotoco
 {
-    const string _apiKey = "sk-proj-ns5k58OoOfWZFs1ZlLHZT3BlbkFJb8d6TcRCrLWZjSMiEFLg"; // Reemplaza con tu clave de API de OpenAI
-    const string _modelo_embedding = "text-embedding-3-small";
-    const string _modelo_chat = "gpt-5.6-luna";
-    public static async Task BuscarDescripcionesIA(List<ProveedorMaestroTbl> preciosRevisar)
+    private readonly IConfiguration _config;
+    public ClienteWebPotoco(IConfiguration config)
     {
+        _config = config;
+        _apiKey = _config["IA:OpenIA:Token"];
+        _log.Debug("ClienteWebPotoco inicializado.");
 
+    }
+    const int _tiempoMaximoEsperaEnMinutos = 5; // 5 minutos
+    string _apiKey  = "";
+    const string _modelo_embedding = "text-embedding-3-large"; //"text-embedding-3-large  -small";
+    const string _modelo_chat = "gpt-5.6-luna";
+    private  readonly Serilog.ILogger _log = Log.ForContext(typeof(ClienteWebPotoco));
+    public async Task BuscarDescripcionesIA(ModeloBuscarDescripcion dataInstr)
+    {
+        _log.Information("Inicio BuscarDescripcionesIA. Cantidad de productos: {Cantidad}", dataInstr.PreciosRevisar.Count);
 
-        var nuevosProductosarevisar = string.Empty;
-
-        foreach (var rec in preciosRevisar)
+        string RemoveFirstAndLastChar(string text)
         {
-            int posicion = preciosRevisar.IndexOf(rec) + 1;
-            string caracterFinal = posicion == preciosRevisar.Count ? "" : "\n";
-            nuevosProductosarevisar += $"{posicion}. {rec.Descripcion1}{caracterFinal}";
+            if (string.IsNullOrEmpty(text) || text.Length <= 2)
+                return string.Empty;
+            return text[1..^1];
         }
 
-        var request = new
+
+    string instrunccionDeveloper = dataInstr.InstruccionDeveloper;
+        string instrunccionUsuario = dataInstr.InstruccionUsuario;
+
+
+        var request = new JsonObject
         {
-            model = _modelo_chat,
-            response_format = new { type = "json_object"},
-            messages = new[]
+            ["model"] = _modelo_chat,
+            ["input"] = new JsonArray
             {
-                new
+                new JsonObject
                 {
-                    role = "system",
-                    content = "Eres un asistente de catalogación de ferretería. Analiza cada producto de la lista enviada por el usuario y responde ÚNICAMENTE con un JSON que contenga una propiedad 'productos' con el array de productos normalizados. Cada elemento debe contener: id_temporal (number) con el número exacto del producto enviado, nombre_canonico (string), rubro (array de string), atributos (objeto: propiedad = valor), sinonimos (array de string), tipo de usos  (array de string)"
+                    ["role"] = "developer",
+                    ["content"] = new JsonArray
+                    {
+                        new JsonObject
+                        {
+                            ["type"] = "input_text",
+                            ["text"] = instrunccionDeveloper
+                        }
+                    }
                 },
-                new
+                new JsonObject
                 {
-                    role = "user",
-                    content = nuevosProductosarevisar
+                    ["role"] = "user",
+                    ["content"] = instrunccionUsuario
                 }
+            },
+            ["text"] = new JsonObject
+            {
+                ["format"] = new JsonObject
+                {
+                    ["type"] = "json_object"
+                },
+                ["verbosity"] = "medium"
             }
         };
 
+
+
+
+        var preciosRevisar = dataInstr.PreciosRevisar;
+
         using var httpClient = new HttpClient();
-        using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
+        httpClient.Timeout = TimeSpan.FromMinutes(_tiempoMaximoEsperaEnMinutos); // Ajusta el tiempo de espera según tus necesidades
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/responses");
         msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _apiKey);
         msg.Content = JsonContent.Create(request);
 
         var response = await httpClient.SendAsync(msg);
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        var data = json.GetProperty("choices")[0].GetProperty("message").GetProperty("content");
+        _log.Debug("Respuesta de descripciones IA recibida correctamente.");
+
+
+        var message = json
+            .GetProperty("output")
+            .EnumerateArray()
+            .First(x => x.GetProperty("type").GetString() == "message");
+
+        var outputText = message
+            .GetProperty("content")
+            .EnumerateArray()
+            .First(x => x.GetProperty("type").GetString() == "output_text");
+
+        var data = outputText.GetProperty("text");
+
+
         var doc = JsonDocument.Parse(data.GetString());
         var productos = doc.RootElement.GetProperty("productos");
+        var procesados = 0;
         foreach (var p in productos.EnumerateArray())
         {
-            string jsonProducto = p.GetRawText();
-            string nombre = p.GetProperty("nombre_canonico").GetString();
-            string rubro = p.GetProperty("rubro").GetRawText();
-            string sinonimos = p.GetProperty("sinonimos").GetRawText();
-            string tipoDeUsos = p.GetProperty("tipo de usos").GetRawText();
-            string atributos = p.GetProperty("atributos").GetRawText(); 
             int id = p.GetProperty("id_temporal").GetInt32();
+            try
+            {
+                string jsonProducto = p.GetRawText();
+                string nombre = p.GetProperty("nombre_canonico").GetString();
+                string rubro = p.GetProperty("rubro").GetRawText();
+                string sinonimos = p.GetProperty("sinonimos").GetRawText();
+                string tipoDeUsos = p.GetProperty("tipo_de_usos").GetRawText();
+                string atributos = p.GetProperty("atributos").GetRawText();
+                string descDet = RemoveFirstAndLastChar(p.GetProperty("descripcion_detallada").GetRawText());
 
-            preciosRevisar[id - 1].AtributosJson = atributos;
-            preciosRevisar[id - 1].RubrosJson = rubro;
-            preciosRevisar[id - 1].SinonimosJson = sinonimos;
-            preciosRevisar[id - 1].UsosJson = tipoDeUsos;
-            preciosRevisar[id - 1].NombreCanonico = nombre;
-            preciosRevisar[id - 1].JsonRaw = jsonProducto;
-            preciosRevisar[id - 1].TextoVectorial = CrearTextoEmbeddingNarrativo(jsonProducto);
+                preciosRevisar[id - 1].AtributosJson = atributos;
+                preciosRevisar[id - 1].RubrosJson = rubro;
+                preciosRevisar[id - 1].SinonimosJson = sinonimos;
+                preciosRevisar[id - 1].UsosJson = tipoDeUsos;
+                preciosRevisar[id - 1].NombreCanonico = nombre;
+                preciosRevisar[id - 1].JsonRaw = jsonProducto;
+                preciosRevisar[id - 1].DescripcionDetallada = descDet;
+                preciosRevisar[id - 1].TextoVectorial = CrearTextoEmbeddingNarrativo(jsonProducto);
+                preciosRevisar[id - 1].ErrorMensaje = "sin errores";
+                procesados++;
+            }
+            catch (Exception ex)
+            {
+                preciosRevisar[id - 1].ErrorMensaje = $"Error procesando producto: {ex.Message}";
+                _log.Error(ex, "Error procesando producto con id temporal {IdTemporal}.", id);
+            }
+
         }
-    }
 
-    public static async Task CrearVector(List<ProveedorMaestroTbl> lisPreProDataTbls)
+        _log.Information("Fin BuscarDescripcionesIA. Productos procesados correctamente: {Procesados}", procesados);
+    }
+    public async Task CrearVector(ModeloEmbeddingProducto dataModelo)
     {
-        var inpusT = lisPreProDataTbls.OrderBy(x => x.ProveedorMaestroId).Select(x => x.TextoVectorial).ToArray();
+        _log.Information("Inicio CrearVector. Cantidad de entradas: {Cantidad}", dataModelo.InstruccionUsuario.Length);
         var request = new
         {
             model = _modelo_embedding,
-            input = inpusT
+            input = dataModelo.InstruccionUsuario,
+            dimensions = 1536
         };
 
+        var lisPreProDataTbls = dataModelo.PreciosRevisar;
+
         using var httpClient = new HttpClient();
+        httpClient.Timeout = TimeSpan.FromMinutes(_tiempoMaximoEsperaEnMinutos); // Ajusta el tiempo de espera según tus necesidades
         using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/embeddings");
         msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _apiKey);
         msg.Content = JsonContent.Create(request);
@@ -94,10 +165,12 @@ public static class ClienteWebPotoco
 
         var responseJson = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<EmbeddingResponse>(responseJson);
+        _log.Debug("Embeddings recibidos desde API.");
 
 
         if (result.Data.Count != lisPreProDataTbls.Count)
         {
+            _log.Error("Cantidad de embeddings inválida. Esperados: {Esperados}. Recibidos: {Recibidos}", lisPreProDataTbls.Count, result.Data.Count);
             throw new Exception(
                 $"Se esperaban {lisPreProDataTbls.Count} embeddings, " +
                 $"pero OpenAI devolvió {result.Data.Count}."
@@ -108,33 +181,30 @@ public static class ClienteWebPotoco
         {
             if (item.Index < 0 || item.Index >= lisPreProDataTbls.Count)
             {
+                _log.Error("Índice de embedding inválido: {Index}", item.Index);
                 throw new Exception($"Index inválido: {item.Index}");
             }
 
             var itemPrecio = lisPreProDataTbls[item.Index];
             itemPrecio.VectorEmbedding = new SqlVector<float>(item.Embedding.ToArray()); 
-
-            // Guardar texto + embedding
         }
 
-
-        //var list = new List<float>();
-        //foreach (var v in data.EnumerateArray())
-        //    list.Add((float)v.GetDouble());
-
+        _log.Information("Fin CrearVector. Embeddings asignados: {Cantidad}", result.Data.Count);
 
 
     }
-
-    public static async Task<float[]> CrearVectorBusquedaUsuarioAsync(string textoUsuario)
+    public async Task<float[]> CrearVectorBusquedaUsuarioAsync(string textoUsuario)
     {
+        _log.Information("Inicio CrearVectorBusquedaUsuarioAsync. Longitud de texto: {Longitud}", textoUsuario?.Length ?? 0);
         var request = new
         {
             model = _modelo_embedding,
-            input = textoUsuario
+            input = textoUsuario,
+            dimensions = 1536
         };
 
         using var httpClient = new HttpClient();
+        httpClient.Timeout = TimeSpan.FromMinutes(_tiempoMaximoEsperaEnMinutos); // Ajusta el tiempo de espera según tus necesidades
         using var msg = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/embeddings");
         msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _apiKey);
         msg.Content = JsonContent.Create(request);
@@ -145,21 +215,24 @@ public static class ClienteWebPotoco
         var list = new List<float>();
         foreach (var v in data.EnumerateArray())
             list.Add((float)v.GetDouble());
+        _log.Information("Fin CrearVectorBusquedaUsuarioAsync. Dimensiones generadas: {Cantidad}", list.Count);
         return list.ToArray();
     }
 
-
-    private static string CrearTextoEmbeddingNarrativo(string jsonProducto)
+    private  string CrearTextoEmbeddingNarrativo(string jsonProducto)
     {
+        _log.Debug("Inicio CrearTextoEmbeddingNarrativo.");
         if (string.IsNullOrWhiteSpace(jsonProducto))
+        {
+            _log.Warning("CrearTextoEmbeddingNarrativo recibió JSON vacío.");
             return string.Empty;
+        }
 
         using var doc = JsonDocument.Parse(jsonProducto);
         var root = doc.RootElement;
 
         var sb = new StringBuilder();
 
-        // 1. Nombre del producto
         if (root.TryGetProperty("nombre_canonico", out var nombre))
         {
             var textoNombre = ValorComoTexto(nombre);
@@ -169,7 +242,6 @@ public static class ClienteWebPotoco
             }
         }
 
-        // 2. Atributos (maneja números, strings y nulos de forma segura)
         if (root.TryGetProperty("atributos", out var atributos) && atributos.ValueKind == JsonValueKind.Object)
         {
             foreach (var attr in atributos.EnumerateObject())
@@ -182,21 +254,22 @@ public static class ClienteWebPotoco
             }
         }
 
-        // 3. Rubros (soporta si viene array o string único)
         ProcesarSeccion(sb, "Pertenece a los rubros: ", root, "rubro");
-
-        // 4. Sinónimos
         ProcesarSeccion(sb, "También conocido como: ", root, "sinonimos");
+        ProcesarSeccion(sb, "Usos habituales: ", root, "tipo_de_usos");
 
-        // 5. Usos
-        ProcesarSeccion(sb, "Usos habituales: ", root, "tipo de usos");
-
-        return sb.ToString().Trim();
+        var salida = sb.ToString().Trim();
+        _log.Debug("Fin CrearTextoEmbeddingNarrativo. Longitud de salida: {Longitud}", salida.Length);
+        return salida;
     }
-    private static void ProcesarSeccion(StringBuilder sb, string prefijo, JsonElement root, string propiedad)
+    private  void ProcesarSeccion(StringBuilder sb, string prefijo, JsonElement root, string propiedad)
     {
+        _log.Debug("ProcesarSeccion para propiedad {Propiedad}.", propiedad);
         if (!root.TryGetProperty(propiedad, out var elemento))
+        {
+            _log.Debug("Propiedad {Propiedad} no encontrada.", propiedad);
             return;
+        }
 
         var items = new List<string>();
 
@@ -211,7 +284,6 @@ public static class ClienteWebPotoco
         }
         else
         {
-            // En caso de que la IA haya devuelto un string en lugar de un array
             var txt = ValorComoTexto(elemento);
             if (!string.IsNullOrWhiteSpace(txt))
                 items.Add(txt);
@@ -221,10 +293,12 @@ public static class ClienteWebPotoco
         {
             sb.Append(prefijo);
             sb.AppendLine(string.Join(", ", items) + ".");
+            _log.Debug("ProcesarSeccion añadió {Cantidad} ítems para propiedad {Propiedad}.", items.Count, propiedad);
         }
     }
-    private static string? ValorComoTexto(JsonElement elemento)
+    private  string? ValorComoTexto(JsonElement elemento)
     {
+        _log.Debug("ValorComoTexto invocado para tipo {Tipo}.", elemento.ValueKind);
         return elemento.ValueKind switch
         {
             JsonValueKind.String => elemento.GetString()?.Trim(),
@@ -235,10 +309,14 @@ public static class ClienteWebPotoco
             _ => elemento.GetRawText().Trim()
         };
     }
-    private static string PrimeraMayus(string clave)
+    private  string PrimeraMayus(string clave)
     {
+        _log.Debug("PrimeraMayus invocado.");
         if (string.IsNullOrEmpty(clave))
+        {
+            _log.Debug("PrimeraMayus recibió cadena vacía.");
             return clave;
+        }
 
         var limpia = clave.Replace('_', ' ');
         return string.Concat(char.ToUpperInvariant(limpia[0]), limpia[1..]);

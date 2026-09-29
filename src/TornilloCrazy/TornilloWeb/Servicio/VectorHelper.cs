@@ -1,5 +1,7 @@
-﻿using Microsoft.Data.SqlTypes;
+﻿using DocumentFormat.OpenXml.ExtendedProperties;
+using Microsoft.Data.SqlTypes;
 using System.Numerics.Tensors;
+using System.Security.AccessControl;
 
 namespace TornilloWeb.Servicio;
 
@@ -27,3 +29,5 @@ public static class VectorHelper
         return TensorPrimitives.CosineSimilarity(a.AsSpan(), b.AsSpan());
     }
 }
+
+

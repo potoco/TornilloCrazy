@@ -1,2 +1,7 @@
-﻿Add-Migration masprop -Project DataServicio -StartupProject TornilloWeb
-Update-Database pmJson -Project DataServicio -StartupProject TornilloWeb
+﻿Add-Migration descdet -Project DataServicio -StartupProject TornilloWeb
+Update-Database descdet -Project DataServicio -StartupProject TornilloWeb
+
+
+USUARIO de ferretera ( para login en la app web)
+usr: admin
+pwd: Kjn56@hj87

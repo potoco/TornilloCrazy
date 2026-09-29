@@ -6,7 +6,7 @@
 
 <div class="row g-4">
     <div class="col-12 col-lg-3">
-        <div class="card shadow-sm border-0 mb-3">
+        <div class="card shadow shadow-sm border-0 mb-3">
             <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
                 <img src="~/icons/upload.svg" alt="Subir" width="20" height="20" />
                 <span class="fw-semibold">Carga de lista de precios</span>
@@ -25,7 +25,6 @@
                 </form>
             </div>
         </div>
-
         @if (!string.IsNullOrWhiteSpace(Model.MensajeError))
         {
             <div class="alert alert-danger mb-3" role="alert">
@@ -42,7 +41,32 @@
                     <div class="small mt-1"><strong>Original:</strong> @Model.NombreOriginalArchivo</div>
                 }
             </div>
+            <div class="card shadow shadow-sm border-0 mb-3 mt-3">
+                <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
+                    <span class="fw-semibold">Asociar a Proveedor...</span>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" asp-page-handler="AsociarExcelProveedor" class="d-grid gap-3">
+                        <input asp-for="LoteId" type="hidden" />
+                        <select asp-for="ProveedorId" class="form-select" aria-label="proveedores">
+                            <option selected value="">Seleccione proveedor para asociar</option>
+                            @foreach (var proveedor in Model.Proveedores)
+                            {
+                                <option value="@proveedor.ProveedorId">@proveedor.RazonSocial</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-primary d-flex justify-content-center align-items-center gap-2">
+                            <img src="~/icons/upload.svg" alt="Asociar" width="18" height="18" />
+                            <span>Asociar</span>
+                        </button>
+                        <span asp-validation-for="ProveedorId" class="text-danger"></span>
+                    </form>
+                </div>
+            </div>
         }
+    
+
     </div>
 
     <div class="col-12 col-lg-9">

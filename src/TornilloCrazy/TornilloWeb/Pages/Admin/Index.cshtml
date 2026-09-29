@@ -1,0 +1,85 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <div class="display-6">Buscar elementos de la Ferreteria</div>
+    <form method="post">
+        <div class="input-group mb-3">
+            <input type="text" name="Buscar" class="form-control" placeholder="Buscar elementos de ferreteria" aria-label="Buscar elementos de ferreteria" aria-describedby="button-addon2">
+            <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Buscar</button>
+        </div>
+    </form>
+    @if (!string.IsNullOrEmpty(Model.Mensaje))
+    {
+        <p class="text-muted">@Model.Mensaje</p>
+    }
+
+    @if (Model.Resultados.Count > 0)
+    {
+        <div class="table-responsive mt-4 text-start">
+            <table class="table table-striped table-hover align-middle">
+                <colgroup>
+                    <col style="width:80%">
+                    <col style="width:20%">
+                </colgroup>
+                <tbody>
+                    @foreach (var item in Model.Resultados)
+                    {
+                        <tr>
+                            <td class="">
+                                <div class="fw-semibold fs-4">@item.NombreCanonico</div>
+                                <div buscarImg class="text-muted mt-1" style="font-size:0.8rem;">@item.DescripcionDetallada</div>
+                                <div class="mt-2" style="font-size:0.8rem;">
+                                    <span class="fw-semibold">Proveedor:</span> @item.Proveedor
+                                    <span class="ms-3 fw-semibold">Fecha lista de precio:</span> @item.FecIngreso.ToString("dd/MM/yyyy")
+                                    <span class="ms-3 fw-semibold">Importancia:</span> @item.Distancia.ToString("0.00")
+                                </div>
+                            </td>
+                            <td class="text-end fw-bold fs-4 text-primary">@Model.ObtenerPrimerPrecio(item.LineaCruda)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+<script>
+    window.onload = function() {
+        // Llama a la función después de que la página se haya cargado
+        // var elementos = document.querySelectorAll('[buscarImg]')[0];
+        // var textoVectorial = elementos.innerText; // Obtiene el texto del primer elemento con el atributo buscarImg
+        // buscandoImagen();
+
+        var elementos = document.querySelectorAll('[buscarImg]');
+        if (elementos){
+
+            elementos.forEach((unElemento) => {
+                unElemento.addEventListener('click', function() {
+                    console.log(this.innerText);
+                    console.log('Se hizo clic en uno de los elementos de la lista');
+
+                    const descripcion = this.innerText;
+
+
+                    // 2. Codifica el texto para que sea seguro en una URL
+                    const descripcionCodificada = encodeURIComponent(descripcion);
+
+                    // 3. Construye la URL final de Google Imágenes
+                    const urlFinal = `https://www.google.com/search?tbm=isch&q=${descripcionCodificada}`;
+
+                    console.log(`Redirigiendo a: ${urlFinal}`);
+
+                    // 4. Abre la página en una nueva pestaña
+                    window.open(urlFinal, '_blank');
+
+
+
+                });
+            });
+
+        }
+    };
+</script>

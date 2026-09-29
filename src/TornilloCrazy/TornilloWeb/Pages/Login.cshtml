@@ -1,0 +1,61 @@
+@page
+@model TornilloWeb.Pages.LoginModel
+@{
+    ViewData["Title"] = "Iniciar sesión";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TornilloWeb</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/TornilloWeb.styles.css" asp-append-version="true" />
+</head>
+<body class="bg-light">
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Acceso de administrador</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" class="d-grid gap-3">
+                            <input asp-for="ReturnUrl" type="hidden" />
+                            <div>
+                                <label asp-for="Input.LoginUser" class="form-label"></label>
+                                <input asp-for="Input.LoginUser" class="form-control" autocomplete="username" />
+                                <span asp-validation-for="Input.LoginUser" class="text-danger"></span>
+                            </div>
+
+                            <div>
+                                <label asp-for="Input.LoginPwd" class="form-label"></label>
+                                <input asp-for="Input.LoginPwd" type="password" class="form-control" autocomplete="current-password" />
+                                <span asp-validation-for="Input.LoginPwd" class="text-danger"></span>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.MensajeError))
+                            {
+                                <div class="alert alert-danger mb-0" role="alert">@Model.MensajeError</div>
+                            }
+
+                            <button type="submit" class="btn btn-primary">Ingresar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

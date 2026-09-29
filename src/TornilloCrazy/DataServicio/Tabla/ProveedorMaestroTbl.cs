@@ -25,6 +25,7 @@ public class ProveedorMaestroTbl
 
     /// <summary>
     /// EstadoRevisionIA 
+    /// 0 = Para revisar, 
     /// 1 = Revisando, 
     /// 2 = Aprobado, 
     /// 3 = Rechazado, 
@@ -35,12 +36,14 @@ public class ProveedorMaestroTbl
     public DateTime? FechaRevisionIA { get; set; } // Fecha de revisión por la IA
     public DateTime? FechaSeleccionProducto { get; set; } // Fecha de selección del producto
 
-
+    [Column(TypeName = "nvarchar(max)")]
+    public string? DescripcionDetallada { get; set; }
 
     public int ProveedorId { get; set; }
     public ProveedorTbl Proveedor { get; set; } = null!;
 
     public int? ProductoId { get; set; } 
-    public ProductoTbl? Producto { get; set; } 
+    public ProductoTbl? Producto { get; set; }
 
+    [MaxLength(500)] public string ErrorMensaje { get; set; } = string.Empty;
 }

@@ -19,7 +19,8 @@ public class ProveedorService
         var persona = new PersonaTbl
         {
             CUIT = cuit.Trim(),
-            Nombre = razonSocial.Trim()
+            Nombre = razonSocial.Trim(),
+            Estado = 1
         };
 
         _dbContext.Personas.Add(persona);
@@ -27,7 +28,8 @@ public class ProveedorService
 
         var proveedor = new ProveedorTbl
         {
-            PersonaId = persona.PersonaId
+            PersonaId = persona.PersonaId,
+            Estado = 1
         };
 
         _dbContext.Proveedores.Add(proveedor);
@@ -44,6 +46,7 @@ public class ProveedorService
     {
         return await _dbContext.Proveedores
             .AsNoTracking()
+            .Where(p => p.Estado == 1)
             .Include(p => p.Persona)
             .Select(p => new ProveedorDto(
                 p.ProveedorId,
@@ -58,13 +61,25 @@ public class ProveedorService
         return await _dbContext.Proveedores
             .AsNoTracking()
             .Include(p => p.Persona)
-            .Where(p => p.ProveedorId == proveedorId)
+            .Where(p => p.ProveedorId == proveedorId && p.Estado == 1)
             .Select(p => new ProveedorDto(
                 p.ProveedorId,
                 p.PersonaId,
                 p.Persona.CUIT,
                 p.Persona.Nombre))
             .FirstOrDefaultAsync();
+    }
+
+    public async Task BajaLogicaProveedorAsync(int proveedorId)
+    {
+        var proveedor = await _dbContext.Proveedores
+            .FirstOrDefaultAsync(p => p.ProveedorId == proveedorId);
+
+        if (proveedor is null)
+            throw new KeyNotFoundException("Proveedor no encontrado.");
+
+        proveedor.Estado = 0;
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task<ListaPrecioArchivoDto> RegistrarListaPrecioAsync(int proveedorId,string nombreArchivoGuid,string nombreArchivoOriginal)
@@ -184,7 +199,9 @@ public class ProveedorService
             entidad.UsosJson = origen.UsosJson;
             entidad.JsonRaw = origen.JsonRaw;
             entidad.TextoVectorial = origen.TextoVectorial;
+            entidad.DescripcionDetallada = origen.DescripcionDetallada;
             entidad.VectorEmbedding = origen.VectorEmbedding;
+            entidad.ErrorMensaje = origen.ErrorMensaje;
         }
         await _dbContext.SaveChangesAsync();
     }
@@ -231,17 +248,27 @@ public class ProveedorService
 
     }
 
-    public async Task<List<ListaRevisionProductoMaestro>> ObtenerItemsSinRevevisionParaMaestro()
+    public async Task<List<ListaRevisionProductoMaestro>?> ObtenerItemsSinRevevisionParaMaestro()
     {
-        var candidatos = await _dbContext.ProveedorMaestros
-            .AsNoTracking()
-            .Where(p => p.FechaSeleccionProducto == null)
-            .Select(p => new ListaRevisionProductoMaestro(
-                p.ProveedorMaestroId,
-                p.VectorEmbedding.Value,
-                new List<int>() // Aquí puedes agregar la lógica para obtener los IdSimilares si es necesario
-            ))
-            .ToListAsync();
+        List<ListaRevisionProductoMaestro>? candidatos;
+        try
+        {
+            candidatos = await _dbContext.ProveedorMaestros
+               .AsNoTracking()
+               .Where(p => p.FechaSeleccionProducto == null && p.EstadoRevisionIA == 2)
+               .Select(p => new ListaRevisionProductoMaestro(
+                   p.ProveedorMaestroId,
+                   p.VectorEmbedding,
+                   new List<int>() // Aquí puedes agregar la lógica para obtener los IdSimilares si es necesario
+               ))
+               .ToListAsync();
+
+        }
+        catch (Exception ex)
+        {
+            candidatos = null;
+            Console.WriteLine($"Error al obtener items sin revisión para maestro: {ex.Message}");
+        }
         return candidatos;
     }
 

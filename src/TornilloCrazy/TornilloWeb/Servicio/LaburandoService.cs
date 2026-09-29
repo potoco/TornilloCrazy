@@ -10,11 +10,16 @@ namespace TornilloWeb.Servicio;
 
 public class LaburandoService : BackgroundService
 {
+    const int _Chunk = 15;
     const int _tiempoEspera = 2000; // Tiempo de espera en milisegundos (2 segundos)
+    private readonly ClienteWebPotoco _clienteWebPotoco;
     private readonly IServiceProvider _serviceProvider;
-    public LaburandoService(IServiceProvider serviceProvider)
+    private readonly ILogger<LaburandoService> _logger;
+    public LaburandoService(IServiceProvider serviceProvider, ILogger<LaburandoService> logger, ClienteWebPotoco clienteWebPotoco)
     {
         _serviceProvider = serviceProvider;
+        _clienteWebPotoco = clienteWebPotoco;
+        _logger = logger;
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -95,6 +100,7 @@ public class LaburandoService : BackgroundService
     {
         using var sco = _serviceProvider.CreateAsyncScope();
         var proveedorServicio = sco.ServiceProvider.GetRequiredService<ProveedorService>();
+        var instruccionesTextoHelper = sco.ServiceProvider.GetRequiredService<InstruccionesTextoHelper>();
         while (!ct.IsCancellationRequested)
         {
             var preciosAprocesar = await proveedorServicio.ObtenerItemsProveedor();
@@ -104,24 +110,27 @@ public class LaburandoService : BackgroundService
                 continue;
             }
 
-            var lotes = preciosAprocesar.Chunk(6);
+            var lotes = preciosAprocesar.Chunk(_Chunk);
             int totalLotes = lotes.Count();
             foreach (var loteActual in lotes)
             {
+                var ids = string.Join(", ", loteActual.Select(y => y.ProveedorMaestroId).ToList());
+                _logger.LogInformation($"BuscarIADescripciones -> Procesando Lotes de ProveedorMaestroId {ids}");
                 try
                 {
                     await proveedorServicio.MarcarItemsEnProceso(loteActual.ToList());
-                    await Task.Delay(800, ct); // esperar 800 milisegundos antes de la siguiente iteración
-                    await ClienteWebPotoco.BuscarDescripcionesIA(loteActual.ToList());
-                    await Task.Delay(800, ct); // esperar 800 milisegundos antes de la siguiente iteración
-                    await ClienteWebPotoco.CrearVector(loteActual.ToList());
-                    await proveedorServicio.ActualizaryMarcarComoProcesados(loteActual.ToList());
-
+                    
+                    await Task.Delay(1200, ct); // esperar 1200 milisegundos antes de la siguiente iteración
+                    var modeloBuscarIA = await instruccionesTextoHelper.CrearModeloBuscarDescripcion(loteActual.ToList());
+                    await _clienteWebPotoco.BuscarDescripcionesIA(modeloBuscarIA);
+                    await Task.Delay(1200, ct); // esperar 1200 milisegundos antes de la siguiente iteración
+                    var modeloVector = await instruccionesTextoHelper.CrearModeloVector(modeloBuscarIA);
+                    await _clienteWebPotoco.CrearVector(modeloVector);
+                    await proveedorServicio.ActualizaryMarcarComoProcesados(modeloVector.PreciosRevisar.ToList());
                 }
                 catch (Exception ex)
                 {
-                    var s = ex.StackTrace;
-                    Console.WriteLine(s);
+                    _logger.LogError(ex, $"BuscarIADescripciones -> Error en procesando Lotes de ProveedorMaestroId {ids}");
                 }
             }
 
@@ -145,13 +154,14 @@ public class LaburandoService : BackgroundService
             var nuevoMaestro = new List<ListaRevisionProductoMaestro>();
             while (itemPreciosSinRevisar.Count > 0)
             {
+
                 // 1. Tomar el elemento representante del grupo
                 var item = itemPreciosSinRevisar[0];
                 itemPreciosSinRevisar.RemoveAt(0);
 
-                // 2. Buscar todos los que son casi idénticos (>= 0.95)
+                // 2. Buscar todos los que son casi idénticos (>= 0.98)
                 var similares = itemPreciosSinRevisar
-                    .Where(z => VectorHelper.Similitud(z.Vector, item.Vector) >= 0.95f)
+                    .Where(z => VectorHelper.Similitud(z.Vector, item.Vector) >= 0.98f)
                     .Select(x=>x.ProveedorMaestroId).ToList();
                 if(similares != null && similares.Count > 0)
                 {
@@ -166,7 +176,24 @@ public class LaburandoService : BackgroundService
             }
             if (nuevoMaestro.Count > 0)
             {
-                await productoServicio.CrearProductoAsync(nuevoMaestro);
+                var lotes = nuevoMaestro.Chunk(_Chunk);
+
+                foreach (var loteActual in lotes)
+                {
+                    var ids = string.Join(", ", loteActual.Select(y => y.ProveedorMaestroId).ToList());
+
+                    try
+                    {
+                        await productoServicio.CrearProductoAsync(loteActual.ToList());
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"BuscarMaestro -> Procesando Lotes de ProveedorMaestroId {ids}");
+
+                    }
+                }
+
             }
         }
     }

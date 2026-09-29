@@ -3,9 +3,7 @@
 @modeloC = "gpt-4.1-nano-2025-04-14"
 @modeloD = "gpt-5-nano-2025-08-07"
 @modelo = {{modeloA}}
-@apikey = nada
-
-
+@apikey = {{$processEnv IA_OpenIA_Token}}
 
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
 # listar modelos
@@ -32,15 +30,46 @@ Authorization: Bearer {{apikey}}
   
 {
   "model": {{modelo}},
-  "response_format": { "type": "json_object" },
   "messages": [
     {
-      "role": "system",
-      "content": "Eres un asistente de catalogación de ferretería. Analiza cada producto de la lista enviada por el usuario y responde ÚNICAMENTE con un JSON que contenga una propiedad 'productos' con el array de productos normalizados. Cada elemento debe contener: id_temporal (number) con el número exacto del producto enviado, nombre_canonico (string), rubro (array de string), atributos (objeto: propiedad = valor), sinonimos (array de string), tipo de usos  (array de string)"
+      "role": "Developer",
+      "content": "Eres un asistente de catalogación de ferretería. Analiza cada producto de la lista enviada por el usuario y responde ÚNICAMENTE con un JSON que contenga una propiedad 'productos' con el array de productos normalizados. Cada elemento debe contener: id_temporal (number) con el número exacto del producto enviado, nombre_canonico (string), rubro (array de string), atributos (objeto: propiedad = valor, especificar si tiene: marca,modelo,estado_fisico_del_producto,forma_de_presentacion,material,medidas,compatibilidad,color,contenido,unidad_de_venta,tratamieno_o_acabado,tipo_tecnico), sinonimos (vector de string), tipo de usos (vector de string), descripcion (es un string con un detalle ampliado del producto)"
     },
     {
       "role": "user",
-      "content" :"1. ABRAZADERA C/CREMALL REF12MM 60-80 ABRAZADERAS PERFECTO\n2. ADAPTADOR TANQUE FUSION 20 IPS." 
+      "content" :"1. IPS FUSION AGUA CUPLA RED. RM H 20X3/4\n2. REDECO FUSION AGUA CODO RM H 20X1/2" 
     }
-  ]
+  ],
+  "response_format": { "type": "json_object" }
+}
+
+###
+# mas moderno
+POST https://api.openai.com/v1/responses  HTTP/1.1 
+Content-Type: application/json
+Authorization: Bearer {{apikey}}
+  
+{
+  "model": {{modelo}},
+  "input": [
+    {
+      "role": "developer",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Eres un exporte catalogador de productos de ferreteria. El usuario va a poner descripcion de productos, por lo tanto debes dar descripciones bastantate detallada para que el usuario entienda de que se trata el producto y para que uso se le puede dar. Analiza cada producto de la lista enviada por el usuario y responde ÚNICAMENTE con un JSON que contenga una propiedad 'productos' con el array de productos normalizados. Cada elemento debe contener: id_temporal (number) con el número exacto del producto enviado, descripcion_detallada (string), nombre_canonico (string), rubro (array de string), atributos (objeto: propiedad = valor), sinonimos (array de string), tipo de usos  (array de string)"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content" :"1. IPS FUSION AGUA CUPLA RED. RM H 20X3/4\n2. REDECO FUSION AGUA CODO RM H 20X1/2" 
+    }
+  ],  
+  "text": {
+    "format": {
+      "type": "json_object"
+    },
+    "verbosity": "medium"
+  }
 }

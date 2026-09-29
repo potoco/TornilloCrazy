@@ -28,4 +28,9 @@ public class ProductoTbl
     public SqlVector<float>? VectorEmbedding { get; set; }
     public string? JsonRaw { get; set; }
 
+    [Column(TypeName = "nvarchar(max)")]
+    public string? DescripcionDetallada { get; set; }
+
+    public virtual ICollection<ProveedorMaestroTbl> ProveedorMaestros { get; set; } = new List<ProveedorMaestroTbl>();  
+
 }

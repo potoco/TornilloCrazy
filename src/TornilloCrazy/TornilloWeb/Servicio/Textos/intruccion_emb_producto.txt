@@ -1,0 +1,3 @@
+Contexto: catálogo de productos de ferretería, sanitarios y materiales
+para instalaciones domiciliarias y de construcción.
+
