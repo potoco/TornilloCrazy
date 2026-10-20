@@ -53,7 +53,7 @@ public class ProductoService
             join datap in _context.LisPreProData on lp.ListaPrecioProveedorId equals datap.ListaPrecioProveedorId
             join p in _context.Proveedores on pm.ProveedorId equals p.ProveedorId
             join per in _context.Personas on p.PersonaId equals per.PersonaId
-            where EF.Functions.VectorDistance("cosine", prd.VectorEmbedding.Value, vectorConsulta) <= 0.6
+            where EF.Functions.VectorDistance("cosine", prd.VectorEmbedding.Value, vectorConsulta) <= 0.3
                && pm.Descripcion1 == datap.Descripcion1
             select new ProductoResultadoDto
             {
