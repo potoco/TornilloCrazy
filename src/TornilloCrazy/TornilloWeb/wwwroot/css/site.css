@@ -17,8 +17,92 @@ html {
   min-height: 100%;
 }
 
+html,
 body {
-  margin-bottom: 60px;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-main > main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 3.5rem;
+}
+
+.app-main > footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+}
+
+@media (min-width: 992px) {
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 260px;
+    overflow-y: auto;
+    transition: width 0.2s ease;
+  }
+
+  .app-main {
+    margin-left: 260px;
+    transition: margin-left 0.2s ease;
+  }
+
+  body.sidebar-collapsed .app-sidebar {
+    width: 72px;
+  }
+
+  body.sidebar-collapsed .app-main {
+    margin-left: 72px;
+  }
+
+  .app-main > footer {
+    left: 260px;
+  }
+
+  body.sidebar-collapsed .app-main > footer {
+    left: 72px;
+  }
+
+  body.sidebar-collapsed .app-sidebar .sidebar-text,
+  body.sidebar-collapsed .app-sidebar .sidebar-chevron,
+  body.sidebar-collapsed .app-sidebar .sidebar-submenu {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed .app-sidebar .navbar-brand,
+  body.sidebar-collapsed .app-sidebar .nav-link,
+  body.sidebar-collapsed .app-sidebar .sidebar-footer > * {
+    justify-content: center;
+  }
+
+  .app-sidebar .sidebar-text,
+  .app-sidebar .sidebar-chevron {
+    transition: opacity 0.15s ease;
+  }
+}
+
+.app-sidebar .nav-link:hover,
+.app-sidebar .nav-link:focus {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {

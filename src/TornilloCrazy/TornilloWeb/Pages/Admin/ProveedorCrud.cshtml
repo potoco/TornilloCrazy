@@ -4,27 +4,34 @@
     ViewData["Title"] = "CRUD Proveedores";
 }
 
+<div class="d-flex flex-wrap align-items-baseline gap-2 mb-4">
+    <h1 class="h3 fw-bold mb-0"><i class="bi bi-truck text-primary me-2"></i>Proveedores</h1>
+    <span class="text-muted small">Gestión de proveedores, direcciones y datos de contacto.</span>
+</div>
+
 <div class="row g-4">
     <div class="col-12 col-lg-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                <span class="fw-semibold">Proveedores</span>
-                <span class="badge bg-secondary">@Model.Proveedores.Count</span>
+        <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3 px-4">
+                <span class="fw-semibold"><i class="bi bi-list-ul me-2"></i>Proveedores</span>
+                <span class="badge bg-secondary rounded-pill">@Model.Proveedores.Count</span>
             </div>
             <div class="card-body p-0">
                 @if (Model.Proveedores.Count == 0)
                 {
-                    <div class="p-3 text-muted">No hay proveedores activos.</div>
+                    <div class="p-4 text-muted text-center">
+                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay proveedores activos.
+                    </div>
                 }
                 else
                 {
                     <div class="table-responsive">
                         <table class="table table-hover mb-0 align-middle">
                             <thead class="table-light">
-                                <tr>
-                                    <th>CUIT</th>
+                                <tr class="text-uppercase small text-muted">
+                                    <th class="ps-4">CUIT</th>
                                     <th>Razón social</th>
-                                    <th class="text-end">Acciones</th>
+                                    <th class="text-end pe-4">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -32,9 +39,9 @@
                                 {
                                     var activo = Model.ProveedorId == item.ProveedorId;
                                     <tr class="@(activo ? "table-primary" : string.Empty)">
-                                        <td>@item.CUIT</td>
-                                        <td>@item.RazonSocial</td>
-                                        <td class="text-end">
+                                        <td class="ps-4">@item.CUIT</td>
+                                        <td class="fw-semibold">@item.RazonSocial</td>
+                                        <td class="text-end pe-4">
                                             <a asp-page="./ProveedorCrud" asp-route-proveedorId="@item.ProveedorId" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
@@ -58,19 +65,27 @@
     <div class="col-12 col-lg-8">
         @if (!string.IsNullOrWhiteSpace(Model.MensajeOk))
         {
-            <div class="alert alert-success">@Model.MensajeOk</div>
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill"></i>
+                <div>@Model.MensajeOk</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
         }
 
         @if (!string.IsNullOrWhiteSpace(Model.MensajeError))
         {
-            <div class="alert alert-danger">@Model.MensajeError</div>
+            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div>@Model.MensajeError</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
         }
 
-        <div class="card shadow-sm border-0 mb-3">
-            <div class="card-header bg-primary text-white fw-semibold">
-                @(Model.EsEdicion ? "Editar proveedor" : "Nuevo proveedor")
+        <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-primary text-white fw-semibold py-3 px-4">
+                <i class="bi @(Model.EsEdicion ? "bi-pencil-square" : "bi-plus-circle") me-2"></i>@(Model.EsEdicion ? "Editar proveedor" : "Nuevo proveedor")
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form method="post" asp-page-handler="@(Model.EsEdicion ? "Actualizar" : "Crear")" class="row g-3">
                     @if (Model.EsEdicion)
                     {
@@ -92,12 +107,14 @@
                         <span asp-validation-for="ProveedorInput.RazonSocial" class="text-danger"></span>
                     </div>
 
-                    <div class="col-12 d-flex gap-2">
-                        <button type="submit" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1">
+                    <div class="col-12 d-flex gap-2 pt-2">
+                        <button type="submit" class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-2">
                             <i class="bi @(Model.EsEdicion ? "bi-floppy" : "bi-plus-circle")"></i>
+                            @(Model.EsEdicion ? "Guardar cambios" : "Crear proveedor")
                         </button>
-                        <a asp-page="./ProveedorCrud" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                        <a asp-page="./ProveedorCrud" class="btn btn-outline-secondary rounded-pill px-4 d-inline-flex align-items-center gap-2">
                             <i class="bi bi-eraser"></i>
+                            Limpiar
                         </a>
                     </div>
                 </form>
@@ -106,28 +123,28 @@
 
         @if (Model.EsEdicion)
         {
-            <div class="row g-3">
+            <div class="row g-4">
                 <div class="col-12">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header fw-semibold">Direcciones</div>
-                        <div class="card-body">
-                            <form method="post" asp-page-handler="AgregarDireccion" class="row g-2 mb-3">
+                    <div class="card border-0 shadow rounded-4 overflow-hidden">
+                        <div class="card-header fw-semibold bg-light py-3 px-4"><i class="bi bi-geo-alt me-2 text-primary"></i>Direcciones</div>
+                        <div class="card-body p-4">
+                            <form method="post" asp-page-handler="AgregarDireccion" class="row g-2 align-items-center bg-light rounded-3 p-3 mb-4">
                                 <input type="hidden" name="proveedorId" value="@Model.ProveedorSeleccionado!.ProveedorId" />
                                 <input type="hidden" name="personaId" value="@Model.ProveedorSeleccionado!.PersonaId" />
                                 <div class="col-12 col-md-4">
-                                    <input asp-for="DireccionInput.Calle" class="form-control" placeholder="Calle" />
+                                    <input asp-for="DireccionInput.Calle" class="form-control form-control-sm" placeholder="Calle" />
                                 </div>
                                 <div class="col-6 col-md-2">
-                                    <input asp-for="DireccionInput.Numero" class="form-control" placeholder="Número" />
+                                    <input asp-for="DireccionInput.Numero" class="form-control form-control-sm" placeholder="Número" />
                                 </div>
                                 <div class="col-6 col-md-2">
-                                    <input asp-for="DireccionInput.Piso" class="form-control" placeholder="Piso" />
+                                    <input asp-for="DireccionInput.Piso" class="form-control form-control-sm" placeholder="Piso" />
                                 </div>
                                 <div class="col-6 col-md-2">
-                                    <input asp-for="DireccionInput.Depto" class="form-control" placeholder="Depto" />
+                                    <input asp-for="DireccionInput.Depto" class="form-control form-control-sm" placeholder="Depto" />
                                 </div>
                                 <div class="col-6 col-md-2 d-grid">
-                                    <button type="submit" class="btn btn-sm btn-outline-success d-inline-flex align-items-center justify-content-center gap-1">
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
                                         <i class="bi bi-plus-circle"></i>
                                     </button>
                                 </div>
@@ -135,27 +152,27 @@
 
                             @if (Model.ProveedorSeleccionado!.Direcciones.Count == 0)
                             {
-                                <p class="text-muted mb-0">Sin direcciones cargadas.</p>
+                                <p class="text-muted text-center mb-0"><i class="bi bi-inbox me-1"></i>Sin direcciones cargadas.</p>
                             }
                             else
                             {
                                 @foreach (var direccion in Model.ProveedorSeleccionado.Direcciones)
                                 {
-                                    <form method="post" asp-page-handler="ActualizarDireccion" class="row g-2 mb-2">
+                                    <form method="post" asp-page-handler="ActualizarDireccion" class="row g-2 align-items-center border rounded-3 p-2 mb-2">
                                         <input type="hidden" name="proveedorId" value="@Model.ProveedorSeleccionado.ProveedorId" />
                                         <input type="hidden" name="personaId" value="@Model.ProveedorSeleccionado.PersonaId" />
                                         <input type="hidden" name="direccionId" value="@direccion.DireccionId" />
                                         <div class="col-12 col-md-4">
-                                            <input type="text" name="calle" value="@direccion.Calle" class="form-control" />
+                                            <input type="text" name="calle" value="@direccion.Calle" class="form-control form-control-sm" />
                                         </div>
                                         <div class="col-6 col-md-2">
-                                            <input type="text" name="numero" value="@direccion.Numero" class="form-control" />
+                                            <input type="text" name="numero" value="@direccion.Numero" class="form-control form-control-sm" />
                                         </div>
                                         <div class="col-6 col-md-2">
-                                            <input type="text" name="piso" value="@direccion.Piso" class="form-control" />
+                                            <input type="text" name="piso" value="@direccion.Piso" class="form-control form-control-sm" />
                                         </div>
                                         <div class="col-6 col-md-2">
-                                            <input type="text" name="depto" value="@direccion.Depto" class="form-control" />
+                                            <input type="text" name="depto" value="@direccion.Depto" class="form-control form-control-sm" />
                                         </div>
                                         <div class="col-6 col-md-2 d-flex gap-2">
                                             <button type="submit" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
@@ -173,17 +190,17 @@
                 </div>
 
                 <div class="col-12 col-xl-6">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header fw-semibold">Teléfonos</div>
-                        <div class="card-body">
-                            <form method="post" asp-page-handler="AgregarTelefono" class="row g-2 mb-3">
+                    <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+                        <div class="card-header fw-semibold bg-light py-3 px-4"><i class="bi bi-telephone me-2 text-primary"></i>Teléfonos</div>
+                        <div class="card-body p-4">
+                            <form method="post" asp-page-handler="AgregarTelefono" class="row g-2 align-items-center bg-light rounded-3 p-3 mb-4">
                                 <input type="hidden" name="proveedorId" value="@Model.ProveedorSeleccionado!.ProveedorId" />
                                 <input type="hidden" name="personaId" value="@Model.ProveedorSeleccionado!.PersonaId" />
                                 <div class="col-8">
-                                    <input asp-for="TelefonoInput.Telefono" class="form-control" placeholder="Nuevo teléfono" />
+                                    <input asp-for="TelefonoInput.Telefono" class="form-control form-control-sm" placeholder="Nuevo teléfono" />
                                 </div>
                                 <div class="col-4 d-grid">
-                                    <button type="submit" class="btn btn-sm btn-outline-success d-inline-flex align-items-center justify-content-center gap-1">
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
                                         <i class="bi bi-plus-circle"></i>
                                     </button>
                                 </div>
@@ -191,13 +208,13 @@
 
                             @if (Model.ProveedorSeleccionado!.Telefonos.Count == 0)
                             {
-                                <p class="text-muted mb-0">Sin teléfonos cargados.</p>
+                                <p class="text-muted text-center mb-0"><i class="bi bi-inbox me-1"></i>Sin teléfonos cargados.</p>
                             }
                             else
                             {
                                 @foreach (var telefono in Model.ProveedorSeleccionado.Telefonos)
                                 {
-                                    <form method="post" asp-page-handler="ActualizarTelefono" class="input-group mb-2">
+                                    <form method="post" asp-page-handler="ActualizarTelefono" class="input-group input-group-sm mb-2">
                                         <input type="hidden" name="proveedorId" value="@Model.ProveedorSeleccionado.ProveedorId" />
                                         <input type="hidden" name="personaId" value="@Model.ProveedorSeleccionado.PersonaId" />
                                         <input type="hidden" name="telefonoId" value="@telefono.TelefonoId" />
@@ -216,17 +233,17 @@
                 </div>
 
                 <div class="col-12 col-xl-6">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header fw-semibold">Emails</div>
-                        <div class="card-body">
-                            <form method="post" asp-page-handler="AgregarEmail" class="row g-2 mb-3">
+                    <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+                        <div class="card-header fw-semibold bg-light py-3 px-4"><i class="bi bi-envelope me-2 text-primary"></i>Emails</div>
+                        <div class="card-body p-4">
+                            <form method="post" asp-page-handler="AgregarEmail" class="row g-2 align-items-center bg-light rounded-3 p-3 mb-4">
                                 <input type="hidden" name="proveedorId" value="@Model.ProveedorSeleccionado!.ProveedorId" />
                                 <input type="hidden" name="personaId" value="@Model.ProveedorSeleccionado!.PersonaId" />
                                 <div class="col-8">
-                                    <input asp-for="EmailInput.Email" class="form-control" placeholder="Nuevo email" />
+                                    <input asp-for="EmailInput.Email" class="form-control form-control-sm" placeholder="Nuevo email" />
                                 </div>
                                 <div class="col-4 d-grid">
-                                    <button type="submit" class="btn btn-sm btn-outline-success d-inline-flex align-items-center justify-content-center gap-1">
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
                                         <i class="bi bi-plus-circle"></i>
                                     </button>
                                 </div>
@@ -234,13 +251,13 @@
 
                             @if (Model.ProveedorSeleccionado!.Emails.Count == 0)
                             {
-                                <p class="text-muted mb-0">Sin emails cargados.</p>
+                                <p class="text-muted text-center mb-0"><i class="bi bi-inbox me-1"></i>Sin emails cargados.</p>
                             }
                             else
                             {
                                 @foreach (var email in Model.ProveedorSeleccionado.Emails)
                                 {
-                                    <form method="post" asp-page-handler="ActualizarEmail" class="input-group mb-2">
+                                    <form method="post" asp-page-handler="ActualizarEmail" class="input-group input-group-sm mb-2">
                                         <input type="hidden" name="proveedorId" value="@Model.ProveedorSeleccionado.ProveedorId" />
                                         <input type="hidden" name="personaId" value="@Model.ProveedorSeleccionado.PersonaId" />
                                         <input type="hidden" name="emailId" value="@email.EmailId" />

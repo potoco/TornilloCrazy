@@ -11,72 +11,101 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TornilloWeb.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Admin/Index">Tornillo Crazy</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Producto</a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Admin/ProveedorCrud">Crear/Modificar/Eliminar</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Admin/ProveedorCrud">Ingresar Stock</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Admin/ProveedorCrud">Bajar Stock</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Proveedor
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Admin/ProveedorCrud">Crear o Editar</a></li>
-                                <li><a class="dropdown-item" href="#">Ver Lista de Precios</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Admin/CargarExcel">Cargar Excel</a></li>
-                            </ul>
-                        </li>
-                    </ul>
+<body class="bg-light">
+    @{
+        var menuId = "sidebarMenu";
+    }
+    <nav class="d-lg-none navbar navbar-dark bg-dark sticky-top">
+        <div class="container-fluid">
+            <button class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#@menuId" aria-controls="@menuId" aria-label="Abrir menú">
+                <i class="bi bi-list"></i>
+            </button>
+            <a class="navbar-brand ms-2" asp-area="" asp-page="/Admin/Index">
+                <i class="bi bi-nut me-1"></i>Tornillo Crazy
+            </a>
+        </div>
+    </nav>
 
-                    <ul class="navbar-nav ms-auto">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item d-flex align-items-center me-2 text-muted">
-                                <span class="small">@User.Identity?.Name</span>
-                            </li>
-                            <li class="nav-item">
-                                <form method="post" asp-page="/Logout" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Cerrar sesión</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="btn btn-sm btn-primary" asp-page="/Login">Iniciar sesión</a>
-                            </li>
-                        }
+    <aside id="@menuId" class="app-sidebar offcanvas-lg offcanvas-start bg-dark text-white d-flex flex-column" tabindex="-1" aria-labelledby="@(menuId)Label">
+        <div class="d-flex align-items-center justify-content-between gap-2 p-3 border-bottom border-secondary">
+            <a class="navbar-brand text-white fw-bold text-truncate mb-0" asp-area="" asp-page="/Admin/Index" id="@(menuId)Label">
+                <i class="bi bi-nut me-2"></i><span class="sidebar-text">Tornillo Crazy</span>
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-light d-none d-lg-inline-flex" onclick="document.body.classList.toggle('sidebar-collapsed')" aria-label="Colapsar menú">
+                <i class="bi bi-list"></i>
+            </button>
+            <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#@menuId" aria-label="Cerrar menú"></button>
+        </div>
+
+        <ul class="nav nav-pills flex-column gap-1 p-3 flex-grow-1">
+            <li class="nav-item">
+                <a class="nav-link text-white-50 fw-semibold text-uppercase small" asp-area="" asp-page="/Admin/Index">
+                    <i class="bi bi-speedometer2 me-2"></i><span class="sidebar-text">Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuProducto" role="button" aria-expanded="false" aria-controls="menuProducto">
+                    <span><i class="bi bi-box-seam me-2"></i><span class="sidebar-text">Producto</span></span>
+                    <i class="bi bi-chevron-down small sidebar-chevron"></i>
+                </a>
+                <div class="collapse sidebar-submenu" id="menuProducto">
+                    <ul class="nav flex-column ms-4 border-start border-secondary ps-2 my-1">
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/ProveedorCrud">Crear/Modificar/Eliminar</a></li>
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/ProveedorCrud">Ingresar Stock</a></li>
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/ProveedorCrud">Bajar Stock</a></li>
                     </ul>
                 </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container-fluid">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuProveedor" role="button" aria-expanded="false" aria-controls="menuProveedor">
+                    <span><i class="bi bi-truck me-2"></i><span class="sidebar-text">Proveedor</span></span>
+                    <i class="bi bi-chevron-down small sidebar-chevron"></i>
+                </a>
+                <div class="collapse sidebar-submenu" id="menuProveedor">
+                    <ul class="nav flex-column ms-4 border-start border-secondary ps-2 my-1">
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/ProveedorCrud">Crear o Editar</a></li>
+                        <li><a class="nav-link text-white-50 py-1" href="#">Ver Lista de Precios</a></li>
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/CargarExcel">Cargar Excel</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - TornilloWeb - <a asp-area="" asp-page="/Privacy">Privacy</a>
+        <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-person-circle fs-4 text-white-50"></i>
+                    <span class="sidebar-text small text-white-50 text-truncate">@User.Identity?.Name</span>
+                </div>
+                <form method="post" asp-page="/Logout">
+                    <button type="submit" class="btn btn-sm btn-outline-light w-100 rounded-pill">
+                        <i class="bi bi-box-arrow-right"></i><span class="sidebar-text ms-1">Cerrar sesión</span>
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a class="btn btn-sm btn-primary w-100 rounded-pill" asp-page="/Login">
+                    <i class="bi bi-box-arrow-in-right"></i><span class="sidebar-text ms-1">Iniciar sesión</span>
+                </a>
+            }
         </div>
-    </footer>
+    </aside>
+
+    <div class="app-main d-flex flex-column">
+        <main role="main">
+            <div class="p-3 p-lg-4">
+                @RenderBody()
+            </div>
+        </main>
+
+        <footer class="border-top footer text-muted py-2 px-3 bg-dark">
+            <div class="container-fluid small text-white">
+                &copy; 2026 - TornilloWeb - <a class="text-white" asp-area="" asp-page="/Privacy">Privacy</a>
+            </div>
+        </footer>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
