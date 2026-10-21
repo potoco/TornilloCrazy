@@ -18,7 +18,7 @@ namespace DataServicio.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.11")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -248,6 +248,31 @@ namespace DataServicio.Migrations
                     b.ToTable("Persona");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.ProductoCostoTbl", b =>
+                {
+                    b.Property<int>("ProductoCostoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductoCostoId"));
+
+                    b.Property<decimal>("Costo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductoCostoId");
+
+                    b.ToTable("ProductoCosto");
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.ProductoTbl", b =>
                 {
                     b.Property<int>("ProductoId")
@@ -423,6 +448,32 @@ namespace DataServicio.Migrations
                     b.ToTable("RubroFerreteria");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.StockControlTbl", b =>
+                {
+                    b.Property<int>("StockControlId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StockControlId"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CodigoAlteracion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("StockControlId");
+
+                    b.ToTable("StockControl");
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.TelefonoTbl", b =>
                 {
                     b.Property<int>("TelefonoId")
@@ -447,6 +498,56 @@ namespace DataServicio.Migrations
                     b.HasIndex("PersonaId");
 
                     b.ToTable("Telefono");
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.TipoAlteracionStockTbl", b =>
+                {
+                    b.Property<int>("TipoAlteracionStockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TipoAlteracionStockId"));
+
+                    b.Property<string>("CodigoAlteracion")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("TipoAlteracionStockId");
+
+                    b.ToTable("TipoAlteracionStock");
+
+                    b.HasData(
+                        new
+                        {
+                            TipoAlteracionStockId = 1,
+                            CodigoAlteracion = "CS",
+                            Descripcion = "Es el evento que marca un punto de partida",
+                            Nombre = "Control de Stock"
+                        },
+                        new
+                        {
+                            TipoAlteracionStockId = 2,
+                            CodigoAlteracion = "II",
+                            Descripcion = "Es el evento que marca un ingreso de stock",
+                            Nombre = "Ingreso de stock"
+                        },
+                        new
+                        {
+                            TipoAlteracionStockId = 3,
+                            CodigoAlteracion = "EE",
+                            Descripcion = "Es el evento que marca EGRESO o SALIDA del stock",
+                            Nombre = "Salida de stock"
+                        });
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.UsuarioTbl", b =>

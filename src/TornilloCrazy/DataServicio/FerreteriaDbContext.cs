@@ -16,7 +16,10 @@ public class FerreteriaDbContext(DbContextOptions<FerreteriaDbContext> options) 
     public DbSet<ProductoTbl> Productos => Set<ProductoTbl>();
     public DbSet<TelefonoTbl> Telefonos => Set<TelefonoTbl>();
     public DbSet<UsuarioTbl> Usuarios => Set<UsuarioTbl>();
-    public DbSet<ProveedorMaestroTbl> ProveedorMaestros => Set<ProveedorMaestroTbl>();  
+    public DbSet<ProveedorMaestroTbl> ProveedorMaestros => Set<ProveedorMaestroTbl>();
+    public DbSet<TipoAlteracionStockTbl> TipoAlteracionStocks => Set<TipoAlteracionStockTbl>();
+    public DbSet<StockControlTbl> StockControls => Set<StockControlTbl>();
+    public DbSet<ProductoCostoTbl> ProductoCostos => Set<ProductoCostoTbl>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +27,17 @@ public class FerreteriaDbContext(DbContextOptions<FerreteriaDbContext> options) 
             .HasMany(p => p.Rubros)
             .WithMany(r => r.Proveedores)
             .UsingEntity(j => j.ToTable("RubroFerreteriaRelacion"));
+
+
+        modelBuilder.Entity<TipoAlteracionStockTbl>().HasData(
+            new { TipoAlteracionStockId=1, Nombre = "Control de Stock", CodigoAlteracion = "CS", Descripcion = "Es el evento que marca un punto de partida" },
+            new { TipoAlteracionStockId = 2, Nombre = "Ingreso de stock", CodigoAlteracion = "II", Descripcion = "Es el evento que marca un ingreso de stock" },
+            new { TipoAlteracionStockId = 3, Nombre = "Salida de stock", CodigoAlteracion = "EE", Descripcion = "Es el evento que marca EGRESO o SALIDA del stock" }
+        );
+
+ 
+
+
     }
 
 
