@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TornilloWeb</title>
+    <title>@ViewData["Title"] - Tornillo Crazy</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
@@ -63,9 +63,9 @@
                 </a>
                 <div class="collapse sidebar-submenu" id="menuProveedor">
                     <ul class="nav flex-column ms-4 border-start border-secondary ps-2 my-1">
-                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/ProveedorCrud">Crear o Editar</a></li>
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/Proveedores/ProveedorCrud">Crear o Editar</a></li>
                         <li><a class="nav-link text-white-50 py-1" href="#">Ver Lista de Precios</a></li>
-                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/CargarExcel">Cargar Excel</a></li>
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/Proveedores/CargarExcel">Cargar Excel</a></li>
                     </ul>
                 </div>
             </li>
@@ -101,8 +101,8 @@
         </main>
 
         <footer class="border-top footer text-muted py-2 px-3 bg-dark">
-            <div class="container-fluid small text-white">
-                &copy; 2026 - TornilloWeb - <a class="text-white" asp-area="" asp-page="/Privacy">Privacy</a>
+            <div class="container-fluid small text-white d-flex flex-row-reverse">
+                Tornillo Crazy - @DateTime.Now.Year<i class="bi bi-nut me-1"></i>
             </div>
         </footer>
     </div>

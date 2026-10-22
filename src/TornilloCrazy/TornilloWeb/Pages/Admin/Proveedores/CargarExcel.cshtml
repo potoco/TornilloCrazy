@@ -78,7 +78,7 @@
 
             @if (Model.TieneResultadosProcesados)
             {
-                <partial name="_PaginacionResultadosExcel" model="Model.Paginacion" />
+                <partial name="_PaginacionResultadosExcel.cshtml" model="Model.Paginacion" />
 
                 @if (Model.Resultados.Count > 0)
                 {
