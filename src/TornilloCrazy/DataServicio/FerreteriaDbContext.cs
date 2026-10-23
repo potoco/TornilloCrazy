@@ -20,7 +20,7 @@ public class FerreteriaDbContext(DbContextOptions<FerreteriaDbContext> options) 
     public DbSet<TipoAlteracionStockTbl> TipoAlteracionStocks => Set<TipoAlteracionStockTbl>();
     public DbSet<StockControlTbl> StockControls => Set<StockControlTbl>();
     public DbSet<ProductoCostoTbl> ProductoCostos => Set<ProductoCostoTbl>();
-
+    public DbSet<ProductoImagenTbl> ProductoImagenes => Set<ProductoImagenTbl>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ProveedorTbl>()

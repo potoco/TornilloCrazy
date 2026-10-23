@@ -1,0 +1,300 @@
+﻿@page
+@model TornilloWeb.Pages.Admin.Productos.ProductoEditModel
+@{
+    ViewData["Title"] = "CRUD Productos";
+}
+
+<div class="d-flex flex-wrap align-items-baseline gap-2 mb-4">
+    <h1 class="h3 fw-bold mb-0"><i class="bi bi-box-seam text-primary me-2"></i>Productos</h1>
+    <span class="text-muted small">Gestión de productos, precios, stock y descripciones.</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3 px-4">
+                <span class="fw-semibold"><i class="bi bi-list-ul me-2"></i>Productos</span>
+                <span class="badge bg-secondary rounded-pill">@Model.Productos.Count</span>
+            </div>
+            <div class="card-body p-0">
+                <form method="get" class="d-flex gap-2 p-3 border-bottom bg-light">
+                    <input asp-for="Buscar" class="form-control form-control-sm" placeholder="Buscar por nombre o código..." />
+                    <button type="submit" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+
+                @if (Model.Productos.Count == 0)
+                {
+                    <div class="p-4 text-muted text-center">
+                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>@(string.IsNullOrWhiteSpace(Model.Buscar) ? "No hay productos cargados." : "Sin resultados para la búsqueda.")
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr class="text-uppercase small text-muted">
+                                    <th class="ps-4">Código</th>
+                                    <th>Nombre</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-end">Cantidad</th>
+                                    <th class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Productos)
+                                {
+                                    var activo = Model.ProductoId == item.ProductoId;
+                                    <tr class="@(activo ? "table-primary" : string.Empty)">
+                                        <td class="ps-4">@(item.Codigo ?? "-")</td>
+                                        <td class="fw-semibold">@item.Nombre</td>
+                                        <td class="text-end">@item.PrecioUnitario.ToString("C2")</td>
+                                        <td class="text-end">@item.Cantidad</td>
+                                        <td class="text-end pe-4">
+                                            <a asp-page="./ProductoEdit" asp-route-productoId="@item.ProductoId" asp-route-buscar="@Model.Buscar" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+        @if (!string.IsNullOrWhiteSpace(Model.MensajeOk))
+        {
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill"></i>
+                <div>@Model.MensajeOk</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.MensajeError))
+        {
+            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div>@Model.MensajeError</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        }
+
+        <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-primary text-white fw-semibold py-3 px-4">
+                <i class="bi @(Model.EsEdicion ? "bi-pencil-square" : "bi-plus-circle") me-2"></i>@(Model.EsEdicion ? "Editar producto" : "Nuevo producto")
+            </div>
+            <div class="card-body p-4">
+                <form method="post" asp-page-handler="@(Model.EsEdicion ? "Actualizar" : "Crear")" class="row g-3">
+                    @if (Model.EsEdicion)
+                    {
+                        <input type="hidden" name="productoId" value="@Model.ProductoSeleccionado!.ProductoId" />
+                    }
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="col-12 col-md-8">
+                        <label asp-for="ProductoInput.Nombre" class="form-label"></label>
+                        <input asp-for="ProductoInput.Nombre" class="form-control" />
+                        <span asp-validation-for="ProductoInput.Nombre" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label asp-for="ProductoInput.Codigo" class="form-label"></label>
+                        <input asp-for="ProductoInput.Codigo" class="form-control" />
+                        <span asp-validation-for="ProductoInput.Codigo" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-6 col-md-3">
+                        <label asp-for="ProductoInput.Cantidad" class="form-label"></label>
+                        <input asp-for="ProductoInput.Cantidad" class="form-control" type="number" min="0" />
+                        <span asp-validation-for="ProductoInput.Cantidad" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-6 col-md-3">
+                        <label asp-for="ProductoInput.PrecioUnitario" class="form-label"></label>
+                        <input asp-for="ProductoInput.PrecioUnitario" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="ProductoInput.PrecioUnitario" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ProductoInput.Rubros" class="form-label"></label>
+                        <input asp-for="ProductoInput.Rubros" class="form-control" placeholder="Rubros separados por coma" />
+                        <span asp-validation-for="ProductoInput.Rubros" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ProductoInput.Sinonimos" class="form-label"></label>
+                        <input asp-for="ProductoInput.Sinonimos" class="form-control" placeholder="Sinónimos separados por coma" />
+                        <span asp-validation-for="ProductoInput.Sinonimos" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="ProductoInput.DescripcionDetallada" class="form-label"></label>
+                        <textarea asp-for="ProductoInput.DescripcionDetallada" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="ProductoInput.DescripcionDetallada" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2 pt-2">
+                        <button type="submit" class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                            <i class="bi @(Model.EsEdicion ? "bi-floppy" : "bi-plus-circle")"></i>
+                            @(Model.EsEdicion ? "Guardar cambios" : "Crear producto")
+                        </button>
+                        <a asp-page="./ProductoEdit" class="btn btn-outline-secondary rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-eraser"></i>
+                            Limpiar
+                        </a>
+                        @if (Model.EsEdicion)
+                        {
+                            <button type="submit" formaction="?handler=EliminarProducto" formmethod="post" formnovalidate class="btn btn-outline-danger rounded-pill px-4 d-inline-flex align-items-center gap-2 ms-auto" onclick="return confirm('¿Desactivar producto?');">
+                                <i class="bi bi-box-arrow-down"></i>
+                                Desactivar
+                            </button>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.EsEdicion)
+        {
+            var tabImagenes = string.Equals(Model.Tab, "imagenes", StringComparison.OrdinalIgnoreCase);
+            <div class="card border-0 shadow rounded-4 overflow-hidden">
+                <div class="card-header bg-light pt-3 px-4 pb-0">
+                    <ul class="nav nav-tabs card-header-tabs" id="productoTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(tabImagenes ? "" : "active") fw-semibold" id="enriquecidos-tab" data-bs-toggle="tab" data-bs-target="#enriquecidos" type="button" role="tab" aria-controls="enriquecidos" aria-selected="@(!tabImagenes)">
+                                <i class="bi bi-info-circle me-1 text-primary"></i>Datos enriquecidos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(tabImagenes ? "active" : "") fw-semibold" id="imagenes-tab" data-bs-toggle="tab" data-bs-target="#imagenes" type="button" role="tab" aria-controls="imagenes" aria-selected="@tabImagenes">
+                                <i class="bi bi-images me-1 text-primary"></i>Imágenes del producto
+                                <span class="badge bg-secondary rounded-pill ms-1">@Model.ImagenesProducto.Count</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <div class="tab-content" id="productoTabsContent">
+                        <div class="tab-pane fade @(tabImagenes ? "" : "show active")" id="enriquecidos" role="tabpanel" aria-labelledby="enriquecidos-tab">
+                            <div class="row g-3 small">
+                                <div class="col-12 col-md-6">
+                                    <span class="text-muted d-block">Texto vectorial</span>
+                                    @if (string.IsNullOrWhiteSpace(Model.ProductoSeleccionado!.TextoVectorial))
+                                    {
+                                        <span class="text-muted fst-italic">Sin datos</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="fw-semibold">@Model.ProductoSeleccionado.TextoVectorial</span>
+                                    }
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <span class="text-muted d-block">Vector embedding</span>
+                                    @if (Model.ProductoSeleccionado.VectorEmbedding is null)
+                                    {
+                                        <span class="badge bg-secondary rounded-pill">Sin generar</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success rounded-pill"><i class="bi bi-check2 me-1"></i>Generado</span>
+                                    }
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <span class="text-muted d-block">Estado</span>
+                                    <span class="badge @(Model.ProductoSeleccionado.Estado >= 0 ? "bg-success" : "bg-secondary") rounded-pill">
+                                        @(Model.ProductoSeleccionado.Estado >= 0 ? "Activo" : "Inactivo")
+                                    </span>
+                                </div>
+                                <div class="col-12">
+                                    <span class="text-muted d-block mb-1">Descripción detallada</span>
+                                    @if (string.IsNullOrWhiteSpace(Model.ProductoSeleccionado.DescripcionDetallada))
+                                    {
+                                        <span class="text-muted fst-italic">Sin descripción.</span>
+                                    }
+                                    else
+                                    {
+                                        <p class="mb-0">@Model.ProductoSeleccionado.DescripcionDetallada</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade @(tabImagenes ? "show active" : "")" id="imagenes" role="tabpanel" aria-labelledby="imagenes-tab">
+                            <form method="post" enctype="multipart/form-data" asp-page-handler="AgregarImagen" class="row g-2 align-items-center bg-light rounded-3 p-3 mb-4">
+                                <input type="hidden" name="productoId" value="@Model.ProductoSeleccionado!.ProductoId" />
+                                <div class="col-12 col-md-6">
+                                    <input asp-for="ImagenArchivo" type="file" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp,.gif" />
+                                </div>
+                                <div class="col-8 col-md-4">
+                                    <div class="form-check mb-0">
+                                        <input type="checkbox" name="esPrincipal" value="true" class="form-check-input" id="esPrincipalCheck" />
+                                        <label class="form-check-label small" for="esPrincipalCheck">Marcar como imagen principal</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 col-md-2 d-grid">
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
+                                        <i class="bi bi-cloud-upload"></i>
+                                        Subir
+                                    </button>
+                                </div>
+                            </form>
+
+                            @if (Model.ImagenesProducto.Count == 0)
+                            {
+                                <p class="text-muted text-center mb-0"><i class="bi bi-images me-1"></i>Sin imágenes cargadas.</p>
+                            }
+                            else
+                            {
+                                <div class="row g-3">
+                                    @foreach (var imagen in Model.ImagenesProducto)
+                                    {
+                                        <div class="col-6 col-md-4 col-xl-3">
+                                            <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
+                                                <div class="position-relative">
+                                                    <img src="~/img/productos/@imagen.NombreArchivo" class="card-img-top object-fit-cover" style="height: 140px;" alt="Imagen del producto" />
+                                                    @if (imagen.EsPrincipal)
+                                                    {
+                                                        <span class="badge bg-success position-absolute top-0 start-0 m-2 rounded-pill">
+                                                            <i class="bi bi-star-fill me-1"></i>Principal
+                                                        </span>
+                                                    }
+                                                </div>
+                                                <div class="card-body p-2 d-flex gap-2 justify-content-center">
+                                                    @if (!imagen.EsPrincipal)
+                                                    {
+                                                        <form method="post" asp-page-handler="MarcarPrincipal" class="d-inline">
+                                                            <input type="hidden" name="productoId" value="@Model.ProductoSeleccionado.ProductoId" />
+                                                            <input type="hidden" name="productoImagenId" value="@imagen.ProductoImagenId" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" title="Marcar como principal">
+                                                                <i class="bi bi-star"></i>
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                    <form method="post" asp-page-handler="EliminarImagen" class="d-inline">
+                                                        <input type="hidden" name="productoId" value="@Model.ProductoSeleccionado.ProductoId" />
+                                                        <input type="hidden" name="productoImagenId" value="@imagen.ProductoImagenId" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" onclick="return confirm('¿Eliminar imagen?');" title="Eliminar imagen">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

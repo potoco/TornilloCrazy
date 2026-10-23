@@ -38,7 +38,7 @@ public class ClienteWebPotoco
         }
 
 
-    string instrunccionDeveloper = dataInstr.InstruccionDeveloper;
+        string instrunccionDeveloper = dataInstr.InstruccionDeveloper;
         string instrunccionUsuario = dataInstr.InstruccionUsuario;
 
 
@@ -110,7 +110,7 @@ public class ClienteWebPotoco
         var procesados = 0;
         foreach (var p in productos.EnumerateArray())
         {
-            int id = p.GetProperty("id_temporal").GetInt32();
+            int id = ExtraerSolamenteNumeroEntero(p.GetProperty("id_temporal").GetRawText());
             try
             {
                 string jsonProducto = p.GetRawText();
@@ -142,6 +142,23 @@ public class ClienteWebPotoco
 
         _log.Information("Fin BuscarDescripcionesIA. Productos procesados correctamente: {Procesados}", procesados);
     }
+
+    private int ExtraerSolamenteNumeroEntero(string numeroRaw)
+    {
+        try
+        {
+            string soloNumeros = new string(numeroRaw
+                .Where(char.IsDigit)
+                .ToArray());
+
+            return int.TryParse(soloNumeros, out int numero) ? numero : 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
     public async Task CrearVector(ModeloEmbeddingProducto dataModelo)
     {
         _log.Information("Inicio CrearVector. Cantidad de entradas: {Cantidad}", dataModelo.InstruccionUsuario.Length);

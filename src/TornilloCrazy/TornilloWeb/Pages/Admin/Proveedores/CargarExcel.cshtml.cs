@@ -11,19 +11,19 @@ namespace TornilloWeb.Pages.Admin.Proveedores;
 
 public class CargarExcelModel : PageModel
 {
-    public List<ProveedorDto> Proveedores { get; private set; } = [];
-
-    private const int PageSize = 10;
-    private readonly IWebHostEnvironment _environment;
-    private readonly IMemoryCache _memoryCache;
-    private readonly ProveedorService _proveedorService;
-
     public CargarExcelModel(IWebHostEnvironment environment, IMemoryCache memoryCache, ProveedorService proveedorService)
     {
         _environment = environment;
         _memoryCache = memoryCache;
         _proveedorService = proveedorService;
     }
+
+    public List<ProveedorDto> Proveedores { get; private set; } = [];
+
+    private const int PageSize = 10;
+    private readonly IWebHostEnvironment _environment;
+    private readonly IMemoryCache _memoryCache;
+    private readonly ProveedorService _proveedorService;
 
     [BindProperty]
     public IFormFile? ArchivoExcel { get; set; }
@@ -167,7 +167,7 @@ public class CargarExcelModel : PageModel
 
         var responseListp = await _proveedorService.RegistrarListaPrecioAsync(ProveedorId.Value, NombreArchivoGuardado, NombreOriginalArchivo);
 
-        return RedirectToPage("/CargarExcel", new { LoteId, PageNumber, FiltroDescripcion });
+        return RedirectToPage("CargarExcel", new { LoteId, PageNumber, FiltroDescripcion });
     }
 
     private void CargarDesdeCache()

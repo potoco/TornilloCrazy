@@ -2,6 +2,8 @@
 using DataServicio.Tabla;
 using Microsoft.Data.SqlTypes;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Text.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DataServicio.Servicio;
@@ -14,6 +16,89 @@ public class ProductoService
     {
         _context = context;
     }
+
+    public async Task<List<ProductoTbl>> ListarUltimosProductosAsync(int cantidad = 8)
+    {
+        return await _context.Productos
+            .AsNoTracking()
+            .Where(p => p.Estado >= 0)
+            .OrderByDescending(p => p.ProductoId)
+            .Take(cantidad)
+            .ToListAsync();
+    }
+
+    public async Task<List<ProductoTbl>> BuscarProductosPorNombreAsync(string textoBuscar, int top = 50)
+    {
+        if (string.IsNullOrWhiteSpace(textoBuscar))
+            return await ListarUltimosProductosAsync(8);
+
+        var texto = textoBuscar.Trim();
+
+        return await _context.Productos
+            .AsNoTracking()
+            .Where(p => p.Estado >= 0 &&
+                (EF.Functions.Like(p.Nombre, $"%{texto}%") ||
+                 (p.Codigo != null && EF.Functions.Like(p.Codigo, $"%{texto}%"))))
+            .OrderBy(p => p.Nombre)
+            .Take(top)
+            .ToListAsync();
+    }
+
+    public async Task<List<ProductoImagenTbl>> ObtenerImagenesProductoAsync(int productoId)
+    {
+        return await _context.ProductoImagenes
+            .AsNoTracking()
+            .Where(i => i.ProductoId == productoId)
+            .OrderByDescending(i => i.EsPrincipal)
+            .ThenByDescending(i => i.ProductoImagenId)
+            .ToListAsync();
+    }
+
+    public async Task<ProductoImagenTbl> AgregarImagenProductoAsync(int productoId, string nombreArchivo, bool esPrincipal)
+    {
+        if (esPrincipal)
+        {
+            await _context.ProductoImagenes
+                .Where(i => i.ProductoId == productoId && i.EsPrincipal)
+                .ExecuteUpdateAsync(s => s.SetProperty(i => i.EsPrincipal, false));
+        }
+
+        var imagen = new ProductoImagenTbl
+        {
+            ProductoId = productoId,
+            NombreArchivo = nombreArchivo,
+            EsPrincipal = esPrincipal
+        };
+
+        _context.ProductoImagenes.Add(imagen);
+        await _context.SaveChangesAsync();
+        return imagen;
+    }
+
+    public async Task<string?> EliminarImagenProductoAsync(int productoId, int productoImagenId)
+    {
+        var imagen = await _context.ProductoImagenes
+            .FirstOrDefaultAsync(i => i.ProductoImagenId == productoImagenId && i.ProductoId == productoId);
+
+        if (imagen is null)
+            return null;
+
+        _context.ProductoImagenes.Remove(imagen);
+        await _context.SaveChangesAsync();
+        return imagen.NombreArchivo;
+    }
+
+    public async Task MarcarImagenPrincipalAsync(int productoId, int productoImagenId)
+    {
+        await _context.ProductoImagenes
+            .Where(i => i.ProductoId == productoId && i.EsPrincipal)
+            .ExecuteUpdateAsync(s => s.SetProperty(i => i.EsPrincipal, false));
+
+        await _context.ProductoImagenes
+            .Where(i => i.ProductoImagenId == productoImagenId && i.ProductoId == productoId)
+            .ExecuteUpdateAsync(s => s.SetProperty(i => i.EsPrincipal, true));
+    }
+
     public async Task<List<CandidatoDuplicadoDto>> BuscarCandidatosAsync(
         float[] vectorNuevoProducto,
         int top = 15)
@@ -155,6 +240,7 @@ public class ProductoService
                 // 2) Si NO hay candidato → crear producto nuevo
                 if (candidato == null)
                 {
+                    string jsonRaw = prov.JsonRaw ?? "{}"; // Valor por defecto si es null
                     productoFinal = new ProductoTbl
                     {
                         Nombre = prov.NombreCanonico,
@@ -163,9 +249,12 @@ public class ProductoService
                         UsosJson = prov.UsosJson,
                         TextoVectorial = prov.TextoVectorial,
                         SinonimosJson = prov.SinonimosJson,
-                        JsonRaw = prov.JsonRaw,
+                        JsonRaw = jsonRaw,
                         DescripcionDetallada = prov.DescripcionDetallada,
-                        VectorEmbedding = prov.VectorEmbedding
+                        VectorEmbedding = prov.VectorEmbedding,
+                        PrecioUnitario = ExtraerPrecioUnitario(jsonRaw), // Valor por defecto
+                        Rubros = ExtraerArrayAString(jsonRaw, "rubro"),
+                        Sinonimos = ExtraerArrayAString(jsonRaw, "sinonimos")
                     };
 
                     // EF Core generará el ID cuando hagamos SaveChanges
@@ -205,5 +294,66 @@ public class ProductoService
     }
 
 
+    private decimal ExtraerPrecioUnitario(string? atributosJson)
+    {
+        if (string.IsNullOrWhiteSpace(atributosJson))
+            return 0;
 
+        try
+        {
+            using var document = JsonDocument.Parse(atributosJson);
+
+            if (!document.RootElement.TryGetProperty("precio_minimo", out var precioElement))
+                return 0;
+
+            if (precioElement.ValueKind == JsonValueKind.Number &&
+                precioElement.TryGetDecimal(out var precio))
+            {
+                return precio;
+            }
+
+            if (precioElement.ValueKind == JsonValueKind.String &&
+                decimal.TryParse(
+                    precioElement.GetString(),
+                    NumberStyles.Any,
+                    CultureInfo.InvariantCulture,
+                    out precio))
+            {
+                return precio;
+            }
+
+            return 0;
+        }
+        catch (JsonException)
+        {
+            return 0;
+        }
+    }
+
+    private string ExtraerArrayAString(string? atributosJson, string propiedad)
+    {
+        if (string.IsNullOrWhiteSpace(atributosJson))
+            return string.Empty;
+
+        try
+        {
+            using var document = JsonDocument.Parse(atributosJson);
+
+            if (!document.RootElement.TryGetProperty(propiedad, out var arrayElement))
+                return string.Empty;
+
+            if (arrayElement.ValueKind != JsonValueKind.Array)
+                return string.Empty;
+
+            return string.Join(", ",
+                arrayElement.EnumerateArray()
+                        .Where(x => x.ValueKind == JsonValueKind.String)
+                        .Select(x => x.GetString())
+                        .Where(x => !string.IsNullOrWhiteSpace(x)));
+        }
+        catch (JsonException)
+        {
+            return string.Empty;
+        }
+    }
 }

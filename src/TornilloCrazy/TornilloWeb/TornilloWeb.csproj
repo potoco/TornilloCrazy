@@ -45,7 +45,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="AppData\Proveedores\" />
-	  <Folder Include="Pages\Admin\Productos\" />
 	</ItemGroup>
 	
 </Project>

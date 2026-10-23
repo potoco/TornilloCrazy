@@ -8,6 +8,20 @@ html {
   }
 }
 
+/* Menores a 1920 (p. ej. 1600x900, 1536x864): fuente intermedia */
+@media (min-width: 1401px) and (max-width: 1919px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+/* 1366 o menos: fuente más chica */
+@media (min-width: 768px) and (max-width: 1400px) {
+  html {
+    font-size: 13px;
+  }
+}
+
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
@@ -105,4 +119,56 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+/* Menores a 1920 (p. ej. 1600x900, 1536x864): interfaz algo más compacta */
+@media (min-width: 992px) and (max-width: 1919px) {
+  .app-sidebar {
+    width: 240px;
+  }
+
+  .app-main {
+    margin-left: 240px;
+  }
+
+  .card .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Pantallas chicas (1366x768 o menos): interfaz bien compacta */
+@media (min-width: 992px) and (max-width: 1400px) {
+  .app-sidebar {
+    width: 200px;
+  }
+
+  .app-main {
+    margin-left: 200px;
+  }
+
+  .card .card-header {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+
+  .card .card-body {
+    padding: 0.6rem;
+  }
+
+  .table > :not(caption) > * > * {
+    padding: 0.3rem 0.45rem;
+  }
+
+  .btn {
+    padding: 0.25rem 0.7rem;
+  }
+
+  .btn-sm {
+    padding: 0.15rem 0.35rem;
+  }
+
+  .form-control,
+  .form-select {
+    padding: 0.25rem 0.55rem;
+  }
 }

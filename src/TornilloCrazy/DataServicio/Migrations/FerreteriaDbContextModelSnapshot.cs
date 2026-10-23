@@ -273,6 +273,32 @@ namespace DataServicio.Migrations
                     b.ToTable("ProductoCosto");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.ProductoImagenTbl", b =>
+                {
+                    b.Property<int>("ProductoImagenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductoImagenId"));
+
+                    b.Property<bool>("EsPrincipal")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NombreArchivo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductoImagenId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("ProductoImagen");
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.ProductoTbl", b =>
                 {
                     b.Property<int>("ProductoId")
@@ -288,8 +314,8 @@ namespace DataServicio.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Codigo")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("DescripcionDetallada")
                         .HasColumnType("nvarchar(max)");
@@ -305,20 +331,21 @@ namespace DataServicio.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("RubroA")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("RubroB")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("RubroC")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("Rubros")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("nvarchar(240)");
 
                     b.Property<string>("RubrosJson")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sinonimos")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("nvarchar(240)");
 
                     b.Property<string>("SinonimosJson")
                         .HasColumnType("nvarchar(max)");
@@ -649,6 +676,17 @@ namespace DataServicio.Migrations
                         .HasForeignKey("ProveedorId");
 
                     b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.ProductoImagenTbl", b =>
+                {
+                    b.HasOne("DataServicio.Tabla.ProductoTbl", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.ProveedorMaestroTbl", b =>

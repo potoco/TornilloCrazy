@@ -70,7 +70,7 @@ public class InstruccionesTextoHelper
         {
             int posicion = preciosRevisar.IndexOf(rec) + 1;
             string caracterFinal = posicion == preciosRevisar.Count ? "" : "\n";
-            nuevosProductosarevisar += $"{posicion}. {rec.Descripcion1}{caracterFinal}";
+            nuevosProductosarevisar += $"#{posicion}. {rec.Descripcion1}{caracterFinal}";
         }
 
         salida.InstruccionDeveloper = await ObtenerIntruccionDetalleAsync();

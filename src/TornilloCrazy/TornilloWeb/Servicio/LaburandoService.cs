@@ -84,7 +84,7 @@ public class LaburandoService : BackgroundService
                 if (resultado != null)
                 {
                     await proveedorServicio.AgregarItemPrecioAsync(idPrecioLista, resultado.Descripcion, resultado.LineaCruda);
-                    await proveedorServicio.GuardarItemMaestroAsync(resultado.Descripcion, proveedorId);
+                    await proveedorServicio.GuardarItemMaestroAsync(resultado.LineaCruda, proveedorId);
                     seAgregaronLineas = true;
                 }
             }

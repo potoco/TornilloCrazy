@@ -11,11 +11,11 @@ public class ProductoTbl
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int ProductoId { get; set; }
     [MaxLength(200)] public string Nombre { get; set; } = "";
-    [MaxLength(50)] public string? RubroA { get; set; }
-    [MaxLength(50)] public string? RubroB { get; set; }
-    [MaxLength(50)] public string? RubroC { get; set; }
-    [MaxLength(15)] public string? Codigo { get; set; }
+    [MaxLength(240)] public string Rubros { get; set; } = "";
+    [MaxLength(240)] public string Sinonimos { get; set; } = "";
+    [MaxLength(30)] public string? Codigo { get; set; }
     public int Cantidad { get; set; } = 0;
+    public decimal PrecioUnitario { get; set; } = 0;
     public int Estado { get; set; } = 0;
 
     public string? AtributosJson { get; set; }
