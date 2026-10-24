@@ -31,6 +31,9 @@ public class ProductoTbl
     [Column(TypeName = "nvarchar(max)")]
     public string? DescripcionDetallada { get; set; }
 
-    public virtual ICollection<ProveedorMaestroTbl> ProveedorMaestros { get; set; } = new List<ProveedorMaestroTbl>();  
+    public virtual ICollection<ProveedorMaestroTbl> ProveedorMaestros { get; set; } = new List<ProveedorMaestroTbl>();
+
+    [NotMapped] public string PrecioUnitarioFormatted { get => $"$ {PrecioUnitario.ToString("#,###,##0")}"; }
+
 
 }

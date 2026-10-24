@@ -172,3 +172,15 @@ body {
     padding: 0.25rem 0.55rem;
   }
 }
+
+.app-sidebar.no-transition {
+    transition: none !important;
+}
+
+body.no-transition .app-sidebar {
+    transition: none !important;
+}
+
+body.no-transition * {
+    transition: none !important;
+}

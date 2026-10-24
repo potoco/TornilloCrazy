@@ -4,6 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Tornillo Crazy</title>
+    <script>
+        (() => {
+            const zoom = parseInt(localStorage.getItem('app-zoom')) || 100;
+            if (zoom !== 100) {
+                document.documentElement.style.zoom = zoom / 100;
+            }
+        })();
+    </script>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
@@ -11,7 +19,15 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TornilloWeb.styles.css" asp-append-version="true" />
 </head>
-<body class="bg-light">
+<body class="no-transition bg-light">
+   <script>
+        if (localStorage.getItem('sidebar-collapsed') === 'true') {
+            document.body.classList.add('sidebar-collapsed');
+        }
+    </script>
+
+
+
     @{
         var menuId = "sidebarMenu";
     }
@@ -31,7 +47,7 @@
             <a class="navbar-brand text-white fw-bold text-truncate mb-0" asp-area="" asp-page="/Admin/Index" id="@(menuId)Label">
                 <i class="bi bi-nut me-2"></i><span class="sidebar-text">Tornillo Crazy</span>
             </a>
-            <button type="button" class="btn btn-sm btn-outline-light d-none d-lg-inline-flex" onclick="document.body.classList.toggle('sidebar-collapsed')" aria-label="Colapsar menú">
+                <button type="button" class="btn btn-sm btn-outline-light d-none d-lg-inline-flex" aria-label="Colapsar menu lat izq">
                 <i class="bi bi-list"></i>
             </button>
             <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#@menuId" aria-label="Cerrar menú"></button>
@@ -69,6 +85,24 @@
                     </ul>
                 </div>
             </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#menuConfiguracion" role="button" aria-expanded="false" aria-controls="menuConfiguracion">
+                    <span><i class="bi bi-tools me-2"></i><span class="sidebar-text">Sistema</span></span>
+                    <i class="bi bi-chevron-down small sidebar-chevron"></i>
+                </a>
+                <div class="collapse sidebar-submenu" id="menuConfiguracion">
+                    <ul class="nav flex-column ms-4 border-start border-secondary ps-2 my-1">
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/Sistema/GeneralEdit">General</a></li>
+                    </ul>
+                </div>
+            </li>
+
+
+
+
+
         </ul>
 
         <div class="sidebar-footer p-3 border-top border-secondary mt-auto">
