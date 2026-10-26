@@ -29,5 +29,3 @@ public static class VectorHelper
         return TensorPrimitives.CosineSimilarity(a.AsSpan(), b.AsSpan());
     }
 }
-
-

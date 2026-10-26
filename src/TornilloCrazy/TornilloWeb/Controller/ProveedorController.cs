@@ -17,7 +17,6 @@ public class ProveedorController : ControllerBase
     private readonly ProveedorService _proveedorService;
     private readonly IWebHostEnvironment _environment;
 
-
     public ProveedorController(ProveedorService proveedorService, IWebHostEnvironment environment)
     {
         _proveedorService = proveedorService;
@@ -105,8 +104,6 @@ public class ProveedorController : ControllerBase
         }
     }
 
-
-
     public sealed class SubirListaPrecioRequest
     {
         [Required(ErrorMessage = "El ID del proveedor es obligatorio.")]
@@ -116,7 +113,6 @@ public class ProveedorController : ControllerBase
         public IFormFile ArchivoExcel { get; set; } = null!;
     }
 
-
     public sealed class CrearProveedorRequest
     {
         [Required, StringLength(19)]
@@ -125,5 +121,4 @@ public class ProveedorController : ControllerBase
         [Required, StringLength(130)]
         public string RazonSocial { get; set; } = string.Empty;
     }
-
 }
