@@ -43,35 +43,35 @@ public class FerreteriaDbContext(DbContextOptions<FerreteriaDbContext> options) 
 
 
         modelBuilder.Entity<RolTbl>().HasData(
-            new { RolId = 1, Nombre = "Administrador" },
-            new { RolId = 2, Nombre = "Vendedor"},
-            new { RolId = 3, Nombre = "Consulta" },
-            new { RolId = 4, Nombre = "Supervisor" }
+            new { RolId = 1, Nombre = "Administrador", Activo=true },
+            new { RolId = 2, Nombre = "Vendedor", Activo=true },
+            new { RolId = 3, Nombre = "Consulta", Activo=true },
+            new { RolId = 4, Nombre = "Supervisor", Activo=true }
         );
 
         modelBuilder.Entity<PermisoTbl>().HasData(
-        new { PermisoId = 1, Codigo = "PRODUCTOS.VER" },
-        new { PermisoId = 2, Codigo = "PRODUCTOS.EDITAR" },
-        new { PermisoId = 3, Codigo = "PRODUCTOS.ELIMINAR" },
-        new { PermisoId = 4, Codigo = "CLIENTES.VER" },
-        new { PermisoId = 5, Codigo = "CLIENTES.EDITAR" },
-        new { PermisoId = 6, Codigo = "USUARIOS.VER" },
-        new { PermisoId = 7, Codigo = "USUARIOS.EDITAR" });
+        new { PermisoId = 1, Codigo = "PRODUCTOS.VER",      Nombre="PRODUCTOS.VER"   , Activo=true   },
+        new { PermisoId = 2, Codigo = "PRODUCTOS.EDITAR",   Nombre="PRODUCTOS.EDITAR"   , Activo=true },
+        new { PermisoId = 3, Codigo = "PRODUCTOS.ELIMINAR", Nombre="PRODUCTOS.ELIMINAR" , Activo=true },
+        new { PermisoId = 4, Codigo = "CLIENTES.VER",       Nombre="CLIENTES.VER"       , Activo=true },
+        new { PermisoId = 5, Codigo = "CLIENTES.EDITAR",    Nombre="CLIENTES.EDITAR"    , Activo=true },
+        new { PermisoId = 6, Codigo = "USUARIOS.VER",       Nombre="USUARIOS.VER"       , Activo=true },
+        new { PermisoId = 7, Codigo = "USUARIOS.EDITAR",    Nombre= "USUARIOS.EDITAR" , Activo=true });
 
         modelBuilder.Entity<RolPermisoTbl>().HasData(
-            new { RolId = 1, PermisoId = 1 },
-            new { RolId = 1, PermisoId = 2 },
-            new { RolId = 1, PermisoId = 3 },
-            new { RolId = 1, PermisoId = 4 },
-            new { RolId = 1, PermisoId = 5 },
-            new { RolId = 1, PermisoId = 6 },
-            new { RolId = 1, PermisoId = 7 },
-            new { RolId = 2, PermisoId = 1 },
-            new { RolId = 2, PermisoId = 2 },
-            new { RolId = 2, PermisoId = 4 },
-            new { RolId = 2, PermisoId = 5 },
-            new { RolId = 3, PermisoId = 1 },
-            new { RolId = 3, PermisoId = 4 }
+            new { RolId = 1, PermisoId = 1, Activo=true },
+            new { RolId = 1, PermisoId = 2, Activo=true },
+            new { RolId = 1, PermisoId = 3, Activo=true },
+            new { RolId = 1, PermisoId = 4, Activo=true },
+            new { RolId = 1, PermisoId = 5, Activo=true },
+            new { RolId = 1, PermisoId = 6, Activo=true },
+            new { RolId = 1, PermisoId = 7, Activo=true },
+            new { RolId = 2, PermisoId = 1, Activo=true },
+            new { RolId = 2, PermisoId = 2, Activo=true },
+            new { RolId = 2, PermisoId = 4, Activo=true },
+            new { RolId = 2, PermisoId = 5, Activo=true },
+            new { RolId = 3, PermisoId = 1, Activo=true },
+            new { RolId = 3, PermisoId = 4, Activo=true }
         );
 
 

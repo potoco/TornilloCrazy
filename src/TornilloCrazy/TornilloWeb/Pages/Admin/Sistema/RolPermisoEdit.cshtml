@@ -1,0 +1,546 @@
+@page
+@model TornilloWeb.Pages.Admin.Sistema.RolPermisoEditModel
+@{
+    ViewData["Title"] = "Roles y Permisos";
+    var tabRoles = Model.Tab == "roles";
+    var tabPermisos = Model.Tab == "permisos";
+    var tabAsignacion = Model.Tab == "asignacion";
+}
+
+<div class="d-flex flex-wrap align-items-baseline gap-2 mb-4">
+    <h1 class="h3 fw-bold mb-0"><i class="bi bi-shield-lock text-primary me-2"></i>Roles y Permisos</h1>
+    <span class="text-muted small">Gestión de roles del sistema, catálogo de permisos y asignación por rol.</span>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.MensajeOk))
+{
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-check-circle-fill"></i>
+        <div>@Model.MensajeOk</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.MensajeError))
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>@Model.MensajeError</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<ul class="nav nav-tabs mb-4" id="rolPermisoTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(tabRoles ? "active" : "") fw-semibold d-inline-flex align-items-center gap-2"
+                id="roles-tab" data-bs-toggle="tab" data-bs-target="#pane-roles" type="button" role="tab"
+                aria-controls="pane-roles" aria-selected="@tabRoles">
+            <i class="bi bi-shield-check text-primary"></i>
+            <span>Roles</span>
+            <span class="badge bg-secondary rounded-pill">@Model.Roles.Count</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(tabPermisos ? "active" : "") fw-semibold d-inline-flex align-items-center gap-2"
+                id="permisos-tab" data-bs-toggle="tab" data-bs-target="#pane-permisos" type="button" role="tab"
+                aria-controls="pane-permisos" aria-selected="@tabPermisos">
+            <i class="bi bi-key text-primary"></i>
+            <span>Permisos</span>
+            <span class="badge bg-secondary rounded-pill">@Model.Permisos.Count</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(tabAsignacion ? "active" : "") fw-semibold d-inline-flex align-items-center gap-2"
+                id="asignacion-tab" data-bs-toggle="tab" data-bs-target="#pane-asignacion" type="button" role="tab"
+                aria-controls="pane-asignacion" aria-selected="@tabAsignacion">
+            <i class="bi bi-diagram-3 text-primary"></i>
+            <span>Asignación de permisos por rol</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="rolPermisoTabsContent">
+    <!-- TAB 1: ROLES -->
+    <div class="tab-pane fade @(tabRoles ? "show active" : "")" id="pane-roles" role="tabpanel" aria-labelledby="roles-tab">
+        <div class="row g-4">
+            <div class="col-12 col-lg-5">
+                <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3 px-4">
+                        <span class="fw-semibold"><i class="bi bi-list-ul me-2"></i>Roles</span>
+                        <span class="badge bg-secondary rounded-pill">@Model.Roles.Count</span>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.Roles.Count == 0)
+                        {
+                            <div class="p-4 text-muted text-center">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay roles cargados.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0 align-middle">
+                                    <thead class="table-light">
+                                        <tr class="text-uppercase small text-muted">
+                                            <th class="ps-4">Rol</th>
+                                            <th>Estado</th>
+                                            <th class="text-end pe-4">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Roles)
+                                        {
+                                            var seleccionado = Model.RolId == item.RolId;
+                                            <tr class="@(seleccionado ? "table-primary" : string.Empty)">
+                                                <td class="ps-4">
+                                                    <span class="fw-semibold">@item.Nombre</span>
+                                                    @if (!string.IsNullOrWhiteSpace(item.Descripcion))
+                                                    {
+                                                        <div class="small text-muted text-truncate" style="max-width: 220px;">@item.Descripcion</div>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (item.Activo)
+                                                    {
+                                                        <span class="badge bg-success-subtle text-success-emphasis rounded-pill">Activo</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill">Inactivo</span>
+                                                    }
+                                                </td>
+                                                <td class="text-end pe-4 text-nowrap">
+                                                    <a asp-page="./RolPermisoEdit" asp-route-tab="roles" asp-route-rolId="@item.RolId"
+                                                       class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" title="Editar rol">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
+                                                    <a asp-page="./RolPermisoEdit" asp-route-tab="asignacion" asp-route-asignacionRolId="@item.RolId"
+                                                       class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" title="Asignar permisos">
+                                                        <i class="bi bi-key"></i>
+                                                    </a>
+                                                    <form method="post" asp-page-handler="CambiarEstadoRol" class="d-inline">
+                                                        <input type="hidden" name="rolId" value="@item.RolId" />
+                                                        <input type="hidden" name="activo" value="@(!item.Activo)" />
+                                                        <button type="submit" class="btn btn-sm @(item.Activo ? "btn-outline-warning" : "btn-outline-success") d-inline-flex align-items-center gap-1"
+                                                                onclick="return confirm('@(item.Activo ? "¿Desactivar rol?" : "¿Activar rol?")');"
+                                                                title="@(item.Activo ? "Desactivar" : "Activar")">
+                                                            <i class="bi @(item.Activo ? "bi-pause-circle" : "bi-check-circle")"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" asp-page-handler="EliminarRol" class="d-inline">
+                                                        <input type="hidden" name="rolId" value="@item.RolId" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
+                                                                onclick="return confirm('¿Eliminar rol @item.Nombre definitivamente?');" title="Eliminar rol">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-7">
+                <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
+                    <div class="card-header bg-primary text-white fw-semibold py-3 px-4 d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="bi @(Model.EsEdicionRol ? "bi-pencil-square" : "bi-plus-circle") me-2"></i>@(Model.EsEdicionRol ? $"Editar rol: {Model.RolSeleccionado!.Nombre}" : "Nuevo rol")
+                        </span>
+                        @if (Model.EsEdicionRol)
+                        {
+                            <span class="badge bg-white text-primary rounded-pill">
+                                <i class="bi bi-people me-1"></i>@Model.RolSeleccionado!.CantidadUsuarios usuario(s)
+                            </span>
+                        }
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="post" asp-page-handler="@(Model.EsEdicionRol ? "ActualizarRol" : "CrearRol")" class="row g-3">
+                            @if (Model.EsEdicionRol)
+                            {
+                                <input type="hidden" name="rolId" value="@Model.RolSeleccionado!.RolId" />
+                            }
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="col-12 col-md-5">
+                                <label asp-for="RolInput.Nombre" class="form-label"></label>
+                                <input asp-for="RolInput.Nombre" class="form-control" placeholder="Ej: Supervisor" />
+                                <span asp-validation-for="RolInput.Nombre" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 col-md-7">
+                                <label asp-for="RolInput.Descripcion" class="form-label"></label>
+                                <input asp-for="RolInput.Descripcion" class="form-control" placeholder="Descripción opcional del rol" />
+                                <span asp-validation-for="RolInput.Descripcion" class="text-danger small"></span>
+                            </div>
+
+                            @if (Model.EsEdicionRol)
+                            {
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input asp-for="RolInput.Activo" class="form-check-input" />
+                                        <label asp-for="RolInput.Activo" class="form-check-label"></label>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                                <button type="submit" class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                                    <i class="bi @(Model.EsEdicionRol ? "bi-floppy" : "bi-plus-circle")"></i>
+                                    @(Model.EsEdicionRol ? "Guardar cambios" : "Crear rol")
+                                </button>
+                                <a asp-page="./RolPermisoEdit" asp-route-tab="roles" class="btn btn-outline-secondary rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                                    <i class="bi bi-eraser"></i>
+                                    Limpiar
+                                </a>
+                                @if (Model.EsEdicionRol)
+                                {
+                                    <a asp-page="./RolPermisoEdit" asp-route-tab="asignacion" asp-route-asignacionRolId="@Model.RolSeleccionado!.RolId"
+                                       class="btn btn-outline-primary rounded-pill px-4 d-inline-flex align-items-center gap-2 ms-auto">
+                                        <i class="bi bi-diagram-3"></i>
+                                        Configurar permisos (@Model.RolSeleccionado!.PermisoIds.Count)
+                                    </a>
+                                }
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: PERMISOS -->
+    <div class="tab-pane fade @(tabPermisos ? "show active" : "")" id="pane-permisos" role="tabpanel" aria-labelledby="permisos-tab">
+        <div class="row g-4">
+            <div class="col-12 col-lg-6">
+                <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3 px-4">
+                        <span class="fw-semibold"><i class="bi bi-list-ul me-2"></i>Catálogo de permisos</span>
+                        <span class="badge bg-secondary rounded-pill">@Model.Permisos.Count</span>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.Permisos.Count == 0)
+                        {
+                            <div class="p-4 text-muted text-center">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay permisos cargados.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0 align-middle">
+                                    <thead class="table-light">
+                                        <tr class="text-uppercase small text-muted">
+                                            <th class="ps-4">Código / Nombre</th>
+                                            <th>Estado</th>
+                                            <th class="text-end pe-4">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var permiso in Model.Permisos)
+                                        {
+                                            var seleccionado = Model.PermisoId == permiso.PermisoId;
+                                            <tr class="@(seleccionado ? "table-primary" : string.Empty)">
+                                                <td class="ps-4">
+                                                    <div><code class="small fw-bold">@permiso.Codigo</code></div>
+                                                    <div class="fw-semibold small">@permiso.Nombre</div>
+                                                    @if (!string.IsNullOrWhiteSpace(permiso.Descripcion))
+                                                    {
+                                                        <div class="small text-muted text-truncate" style="max-width: 260px;">@permiso.Descripcion</div>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (permiso.Activo)
+                                                    {
+                                                        <span class="badge bg-success-subtle text-success-emphasis rounded-pill">Activo</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill">Inactivo</span>
+                                                    }
+                                                </td>
+                                                <td class="text-end pe-4 text-nowrap">
+                                                    <a asp-page="./RolPermisoEdit" asp-route-tab="permisos" asp-route-permisoId="@permiso.PermisoId"
+                                                       class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" title="Editar permiso">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
+                                                    <form method="post" asp-page-handler="CambiarEstadoPermiso" class="d-inline">
+                                                        <input type="hidden" name="permisoId" value="@permiso.PermisoId" />
+                                                        <input type="hidden" name="activo" value="@(!permiso.Activo)" />
+                                                        <button type="submit" class="btn btn-sm @(permiso.Activo ? "btn-outline-warning" : "btn-outline-success") d-inline-flex align-items-center gap-1"
+                                                                onclick="return confirm('@(permiso.Activo ? "¿Desactivar permiso?" : "¿Activar permiso?")');"
+                                                                title="@(permiso.Activo ? "Desactivar" : "Activar")">
+                                                            <i class="bi @(permiso.Activo ? "bi-pause-circle" : "bi-check-circle")"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="post" asp-page-handler="EliminarPermiso" class="d-inline">
+                                                        <input type="hidden" name="permisoId" value="@permiso.PermisoId" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
+                                                                onclick="return confirm('¿Eliminar el permiso @permiso.Codigo definitivamente?');" title="Eliminar permiso">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
+                    <div class="card-header bg-primary text-white fw-semibold py-3 px-4">
+                        <i class="bi @(Model.EsEdicionPermiso ? "bi-pencil-square" : "bi-plus-circle") me-2"></i>@(Model.EsEdicionPermiso ? $"Editar permiso: {Model.PermisoSeleccionado!.Codigo}" : "Nuevo permiso")
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="post" asp-page-handler="@(Model.EsEdicionPermiso ? "ActualizarPermiso" : "CrearPermiso")" class="row g-3">
+                            @if (Model.EsEdicionPermiso)
+                            {
+                                <input type="hidden" name="permisoId" value="@Model.PermisoSeleccionado!.PermisoId" />
+                            }
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="col-12 col-md-6">
+                                <label asp-for="PermisoInput.Codigo" class="form-label"></label>
+                                <input asp-for="PermisoInput.Codigo" class="form-control" placeholder="MODULO.ACCION" />
+                                <span asp-validation-for="PermisoInput.Codigo" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label asp-for="PermisoInput.Nombre" class="form-label"></label>
+                                <input asp-for="PermisoInput.Nombre" class="form-control" placeholder="Nombre descriptivo" />
+                                <span asp-validation-for="PermisoInput.Nombre" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="PermisoInput.Descripcion" class="form-label"></label>
+                                <input asp-for="PermisoInput.Descripcion" class="form-control" placeholder="Descripción opcional del permiso" />
+                                <span asp-validation-for="PermisoInput.Descripcion" class="text-danger small"></span>
+                            </div>
+
+                            @if (Model.EsEdicionPermiso)
+                            {
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input asp-for="PermisoInput.Activo" class="form-check-input" />
+                                        <label asp-for="PermisoInput.Activo" class="form-check-label"></label>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="col-12 d-flex gap-2 pt-2">
+                                <button type="submit" class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                                    <i class="bi @(Model.EsEdicionPermiso ? "bi-floppy" : "bi-plus-circle")"></i>
+                                    @(Model.EsEdicionPermiso ? "Guardar cambios" : "Crear permiso")
+                                </button>
+                                <a asp-page="./RolPermisoEdit" asp-route-tab="permisos" class="btn btn-outline-secondary rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                                    <i class="bi bi-eraser"></i>
+                                    Limpiar
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: ASIGNACION DE PERMISOS POR ROL -->
+    <div class="tab-pane fade @(tabAsignacion ? "show active" : "")" id="pane-asignacion" role="tabpanel" aria-labelledby="asignacion-tab">
+        <div class="row g-4">
+            <div class="col-12 col-lg-4">
+                <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3 px-4">
+                        <span class="fw-semibold"><i class="bi bi-shield-check me-2"></i>Seleccionar Rol</span>
+                        <span class="badge bg-secondary rounded-pill">@Model.Roles.Count</span>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.Roles.Count == 0)
+                        {
+                            <div class="p-4 text-muted text-center">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay roles disponibles.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0 align-middle">
+                                    <thead class="table-light">
+                                        <tr class="text-uppercase small text-muted">
+                                            <th class="ps-4">Rol</th>
+                                            <th>Estado</th>
+                                            <th class="text-end pe-4">Elegir</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var rol in Model.Roles)
+                                        {
+                                            var activo = Model.AsignacionRolId == rol.RolId;
+                                            <tr class="@(activo ? "table-primary" : string.Empty)">
+                                                <td class="ps-4">
+                                                    <span class="fw-semibold">@rol.Nombre</span>
+                                                    @if (!string.IsNullOrWhiteSpace(rol.Descripcion))
+                                                    {
+                                                        <div class="small text-muted text-truncate" style="max-width: 180px;">@rol.Descripcion</div>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (rol.Activo)
+                                                    {
+                                                        <span class="badge bg-success-subtle text-success-emphasis rounded-pill">Activo</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill">Inactivo</span>
+                                                    }
+                                                </td>
+                                                <td class="text-end pe-4">
+                                                    <a asp-page="./RolPermisoEdit" asp-route-tab="asignacion" asp-route-asignacionRolId="@rol.RolId"
+                                                       class="btn btn-sm @(activo ? "btn-primary" : "btn-outline-primary") d-inline-flex align-items-center gap-1">
+                                                        <i class="bi bi-check2-square"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-8">
+                <div class="card border-0 shadow rounded-4 overflow-hidden">
+                    <div class="card-header bg-primary text-white fw-semibold py-3 px-4 d-flex justify-content-between align-items-center">
+                        @if (Model.RolAsignacion is not null)
+                        {
+                            <span><i class="bi bi-diagram-3 me-2"></i>Permisos asignados a: @Model.RolAsignacion.Nombre</span>
+                            <span class="badge bg-white text-primary rounded-pill">@Model.PermisosSeleccionados.Count / @Model.Permisos.Count</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-diagram-3 me-2"></i>Asignación de permisos</span>
+                        }
+                    </div>
+                    <div class="card-body p-4">
+                        @if (Model.RolAsignacion is null)
+                        {
+                            <div class="p-4 text-muted text-center">
+                                <i class="bi bi-arrow-left-circle fs-3 d-block mb-2"></i>Seleccione un rol de la lista para gestionar sus permisos.
+                            </div>
+                        }
+                        else if (Model.Permisos.Count == 0)
+                        {
+                            <div class="p-4 text-muted text-center">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay permisos registrados en el catálogo.
+                            </div>
+                        }
+                        else
+                        {
+                            <form method="post" asp-page-handler="GuardarAsignacion">
+                                <input type="hidden" name="asignacionRolId" value="@Model.RolAsignacion.RolId" />
+
+                                @{
+                                    var grupos = Model.Permisos
+                                        .GroupBy(p => p.Codigo.Contains('.') ? p.Codigo.Split('.')[0] : "GENERAL")
+                                        .OrderBy(g => g.Key)
+                                        .ToList();
+                                }
+
+                                <div class="d-flex flex-wrap justify-content-between align-items-center bg-light rounded-3 p-3 mb-4 gap-2">
+                                    <div class="small text-muted">
+                                        Marque los permisos que tendrá habilitados el rol <strong>@Model.RolAsignacion.Nombre</strong>.
+                                    </div>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="toggleTodosPermisos">
+                                        <label class="form-check-label small fw-semibold" for="toggleTodosPermisos">Seleccionar todos</label>
+                                    </div>
+                                </div>
+
+                                @foreach (var grupo in grupos)
+                                {
+                                    <div class="mb-4">
+                                        <div class="text-uppercase small fw-bold text-secondary border-bottom pb-1 mb-2">
+                                            <i class="bi bi-folder2-open me-1 text-primary"></i>@grupo.Key
+                                        </div>
+                                        <div class="row g-2">
+                                            @foreach (var permiso in grupo)
+                                            {
+                                                var asignado = Model.PermisosSeleccionados.Contains(permiso.PermisoId);
+                                                <div class="col-12 col-md-6">
+                                                    <label class="border rounded-3 p-2 d-flex align-items-center gap-2 h-100 mb-0 @(permiso.Activo ? "" : "bg-light text-muted")" style="cursor:pointer;">
+                                                        <input type="checkbox" name="PermisosSeleccionados" value="@permiso.PermisoId"
+                                                               class="form-check-input mt-0 flex-shrink-0" checked="@asignado" disabled="@(!permiso.Activo)" />
+                                                        <span class="flex-grow-1">
+                                                            <span class="fw-semibold small d-block">@permiso.Nombre</span>
+                                                            <code class="small text-muted">@permiso.Codigo</code>
+                                                            @if (!string.IsNullOrWhiteSpace(permiso.Descripcion))
+                                                            {
+                                                                <span class="d-block text-muted" style="font-size:.75rem;">@permiso.Descripcion</span>
+                                                            }
+                                                        </span>
+                                                        @if (!permiso.Activo)
+                                                        {
+                                                            <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill flex-shrink-0">Inactivo</span>
+                                                        }
+                                                    </label>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                                    <button type="submit" class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                                        <i class="bi bi-floppy"></i>
+                                        Guardar asignación
+                                    </button>
+                                    <a asp-page="./RolPermisoEdit" asp-route-tab="asignacion" asp-route-asignacionRolId="@Model.RolAsignacion.RolId"
+                                       class="btn btn-outline-secondary rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                        Restablecer
+                                    </a>
+                                </div>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const toggle = document.getElementById('toggleTodosPermisos');
+            if (!toggle) return;
+
+            const checkboxes = () => Array.from(document.querySelectorAll('input[name="PermisosSeleccionados"]:not(:disabled)'));
+
+            const syncToggle = () => {
+                const list = checkboxes();
+                toggle.checked = list.length > 0 && list.every(cb => cb.checked);
+            };
+
+            toggle.addEventListener('change', function () {
+                checkboxes().forEach(cb => cb.checked = this.checked);
+            });
+
+            checkboxes().forEach(cb => cb.addEventListener('change', syncToggle));
+            syncToggle();
+        })();
+    </script>
+}

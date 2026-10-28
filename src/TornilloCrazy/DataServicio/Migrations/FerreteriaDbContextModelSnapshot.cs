@@ -211,6 +211,90 @@ namespace DataServicio.Migrations
                     b.ToTable("ListaPrecioProveedor");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.PermisoTbl", b =>
+                {
+                    b.Property<int>("PermisoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PermisoId"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("PermisoId");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Permiso");
+
+                    b.HasData(
+                        new
+                        {
+                            PermisoId = 1,
+                            Activo = true,
+                            Codigo = "PRODUCTOS.VER",
+                            Nombre = "PRODUCTOS.VER"
+                        },
+                        new
+                        {
+                            PermisoId = 2,
+                            Activo = true,
+                            Codigo = "PRODUCTOS.EDITAR",
+                            Nombre = "PRODUCTOS.EDITAR"
+                        },
+                        new
+                        {
+                            PermisoId = 3,
+                            Activo = true,
+                            Codigo = "PRODUCTOS.ELIMINAR",
+                            Nombre = "PRODUCTOS.ELIMINAR"
+                        },
+                        new
+                        {
+                            PermisoId = 4,
+                            Activo = true,
+                            Codigo = "CLIENTES.VER",
+                            Nombre = "CLIENTES.VER"
+                        },
+                        new
+                        {
+                            PermisoId = 5,
+                            Activo = true,
+                            Codigo = "CLIENTES.EDITAR",
+                            Nombre = "CLIENTES.EDITAR"
+                        },
+                        new
+                        {
+                            PermisoId = 6,
+                            Activo = true,
+                            Codigo = "USUARIOS.VER",
+                            Nombre = "USUARIOS.VER"
+                        },
+                        new
+                        {
+                            PermisoId = 7,
+                            Activo = true,
+                            Codigo = "USUARIOS.EDITAR",
+                            Nombre = "USUARIOS.EDITAR"
+                        });
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.PersonaTbl", b =>
                 {
                     b.Property<int>("PersonaId")
@@ -458,6 +542,142 @@ namespace DataServicio.Migrations
                     b.ToTable("Proveedor");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.RolPermisoTbl", b =>
+                {
+                    b.Property<int>("RolId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PermisoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RolId", "PermisoId");
+
+                    b.HasIndex("PermisoId");
+
+                    b.ToTable("RolPermiso");
+
+                    b.HasData(
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 1
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 2
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 3
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 4
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 5
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 6
+                        },
+                        new
+                        {
+                            RolId = 1,
+                            PermisoId = 7
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            PermisoId = 1
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            PermisoId = 2
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            PermisoId = 4
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            PermisoId = 5
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 1
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            PermisoId = 4
+                        });
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.RolTbl", b =>
+                {
+                    b.Property<int>("RolId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RolId"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("RolId");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Rol");
+
+                    b.HasData(
+                        new
+                        {
+                            RolId = 1,
+                            Activo = true,
+                            Nombre = "Administrador"
+                        },
+                        new
+                        {
+                            RolId = 2,
+                            Activo = true,
+                            Nombre = "Vendedor"
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            Activo = true,
+                            Nombre = "Consulta"
+                        },
+                        new
+                        {
+                            RolId = 4,
+                            Activo = true,
+                            Nombre = "Supervisor"
+                        });
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.RubroFerreteriaTbl", b =>
                 {
                     b.Property<int>("RubroFerreteriaId")
@@ -574,6 +794,28 @@ namespace DataServicio.Migrations
                             CodigoAlteracion = "EE",
                             Descripcion = "Es el evento que marca EGRESO o SALIDA del stock",
                             Nombre = "Salida de stock"
+                        });
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.UsuarioRolTbl", b =>
+                {
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RolId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UsuarioId", "RolId");
+
+                    b.HasIndex("RolId");
+
+                    b.ToTable("UsuarioRol");
+
+                    b.HasData(
+                        new
+                        {
+                            UsuarioId = 1,
+                            RolId = 1
                         });
                 });
 
@@ -717,6 +959,25 @@ namespace DataServicio.Migrations
                     b.Navigation("Persona");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.RolPermisoTbl", b =>
+                {
+                    b.HasOne("DataServicio.Tabla.PermisoTbl", "Permiso")
+                        .WithMany("RolPermisos")
+                        .HasForeignKey("PermisoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataServicio.Tabla.RolTbl", "Rol")
+                        .WithMany("RolPermisos")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permiso");
+
+                    b.Navigation("Rol");
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.TelefonoTbl", b =>
                 {
                     b.HasOne("DataServicio.Tabla.PersonaTbl", "Persona")
@@ -726,6 +987,25 @@ namespace DataServicio.Migrations
                         .IsRequired();
 
                     b.Navigation("Persona");
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.UsuarioRolTbl", b =>
+                {
+                    b.HasOne("DataServicio.Tabla.RolTbl", "Rol")
+                        .WithMany("UsuarioRoles")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataServicio.Tabla.UsuarioTbl", "Usuario")
+                        .WithMany("UsuarioRoles")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rol");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.UsuarioTbl", b =>
@@ -761,6 +1041,11 @@ namespace DataServicio.Migrations
                     b.Navigation("LisPreProData");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.PermisoTbl", b =>
+                {
+                    b.Navigation("RolPermisos");
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.PersonaTbl", b =>
                 {
                     b.Navigation("Direcciones");
@@ -773,6 +1058,18 @@ namespace DataServicio.Migrations
             modelBuilder.Entity("DataServicio.Tabla.ProductoTbl", b =>
                 {
                     b.Navigation("ProveedorMaestros");
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.RolTbl", b =>
+                {
+                    b.Navigation("RolPermisos");
+
+                    b.Navigation("UsuarioRoles");
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.UsuarioTbl", b =>
+                {
+                    b.Navigation("UsuarioRoles");
                 });
 #pragma warning restore 612, 618
         }
