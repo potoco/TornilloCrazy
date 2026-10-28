@@ -1,0 +1,107 @@
+@page
+@model TornilloWeb.Pages.Admin.Operacion.VentaEditModel
+@{
+    ViewData["Title"] = "Ingresar venta";
+}
+<style>
+    .app-content-scroll:has(#venta-paneles) { display: flex; flex-direction: column; overflow: hidden; }
+    .app-content-scroll:has(#venta-paneles) > :not(#venta-paneles) { flex-shrink: 0; }
+    #venta-paneles { display: grid; grid-template-columns: 7fr 5fr; gap: 1.5rem; flex: 1; min-height: 0; margin: 0; }
+    #venta-paneles > div { width: auto; min-width: 0; min-height: 0; padding: 0; margin: 0; }
+    .venta-panel { height: 100%; min-height: 0; }
+    @@media (max-width: 991.98px) {
+        #venta-paneles { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: .75rem; }
+    }
+    .venta-catalogo { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); flex: 1; min-height: 0; }
+    .venta-busqueda { display: flex; flex-direction: column; min-height: 0; }
+    .venta-busqueda > form, .venta-paginacion, .venta-panel > .card-header { flex-shrink: 0; }
+    .venta-productos { flex: 1; min-height: 0; overflow-y: auto; }
+    .venta-productos thead { position: sticky; top: 0; z-index: 1; }
+    .venta-detalle { min-height: 0; overflow-y: auto; }
+    .venta-foto { width: 100%; height: 200px; object-fit: contain; }
+    .venta-lineas { flex: 1; min-height: 0; overflow-y: auto; }
+    .venta-lineas thead { position: sticky; top: 0; z-index: 1; }
+    .venta-cantidad { width: 65px; text-align: center; }
+    .venta-nombre { min-width: 150px; overflow-wrap: anywhere; }
+</style>
+<div class="d-flex flex-wrap align-items-baseline gap-2 mb-4">
+    <h1 class="h3 fw-bold mb-0"><i class="bi bi-cart3 text-primary me-2"></i>Venta</h1>
+    <span class="text-muted small">Buscá productos y agregalos al carrito.</span>
+</div>
+@if (!string.IsNullOrWhiteSpace(Model.MensajeOk))
+{
+    <div class="alert alert-success rounded-3">@Model.MensajeOk</div>
+}
+<div asp-validation-summary="All" class="text-danger"></div>
+<div id="venta-error" class="alert alert-danger d-none" role="alert"></div>
+<div class="row g-4" id="venta-paneles">
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow rounded-4 overflow-hidden venta-panel">
+            <div class="card-header bg-dark text-white d-flex justify-content-between py-3 px-4">
+                <span class="fw-semibold"><i class="bi bi-list-ul me-2"></i>Productos</span>
+                <span id="productos-total" class="badge bg-secondary rounded-pill">0</span>
+            </div>
+            <div class="venta-catalogo">
+                <div class="venta-busqueda">
+                    <form id="buscador" class="d-flex gap-2 p-3 border-bottom bg-light">
+                        <input id="buscar" class="form-control form-control-sm" placeholder="Buscar por nombre o código..." aria-label="Buscar productos" maxlength="200" />
+                        <button class="btn btn-sm btn-outline-primary" aria-label="Buscar"><i class="bi bi-search"></i></button>
+                    </form>
+                    <div class="venta-productos">
+                        <table class="table table-hover align-middle mb-0 small">
+                            <thead class="table-light"><tr><th class="ps-3">Código</th><th>Nombre</th><th class="text-end">Precio</th><th class="text-end pe-3"><span class="visually-hidden">Agregar al carrito</span></th></tr></thead>
+                            <tbody id="productos-lista"></tbody>
+                        </table>
+                    </div>
+                    <div class="venta-paginacion d-flex justify-content-between align-items-center border-bottom p-2 gap-2">
+                        <button id="anterior" type="button" class="btn btn-sm btn-outline-secondary" aria-label="Página anterior"><i class="bi bi-chevron-left"></i></button>
+                        <span id="pagina" class="small text-muted" aria-live="polite"></span>
+                        <button id="siguiente" type="button" class="btn btn-sm btn-outline-secondary" aria-label="Página siguiente"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                    </div>
+                    <div id="detalle" class="venta-detalle p-3"><p class="text-muted text-center mt-4">Seleccioná un producto para ver su descripción y foto.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-5">
+                <form method="post" asp-page-handler="Ingresar" id="venta-form" class="card border-0 shadow rounded-4 overflow-hidden venta-panel"
+                      data-borrador-usuario="@(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name ?? "usuario")"
+                      data-venta-ingresada="@(Model.VentaIngresada ? "true" : "false")"
+                      data-es-post="@(HttpMethods.IsPost(Request.Method) ? "true" : "false")">
+                    <input asp-for="CarritoJson" type="hidden" />
+                    <div class="card-header bg-primary text-white fw-semibold py-3 px-4"><i class="bi bi-cart-check me-2"></i>Carrito de venta <span id="carrito-cuenta" class="badge bg-white text-primary rounded-pill ms-2">0</span></div>
+                    <div class="p-3 border-bottom row g-2 m-0">
+                        <div class="col-8">
+                            <label asp-for="ClienteId" class="form-label small">Cliente</label>
+                            <select asp-for="ClienteId" class="form-select form-select-sm" required>
+                                <option value="">Seleccionar cliente...</option>
+                                @foreach (var cliente in Model.Clientes) { <option value="@cliente.Id" data-descuento="@cliente.DescuentoPorcentaje.ToString(System.Globalization.CultureInfo.InvariantCulture)">@cliente.Nombre</option> }
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label asp-for="IvaPorcentaje" class="form-label small">IVA (%)</label>
+                            <input asp-for="IvaPorcentaje" class="form-control form-control-sm" type="number" min="0" max="100" step="0.01" required />
+                        </div>
+                    </div>
+                    <div class="venta-lineas">
+                        <table class="table align-middle mb-0 small">
+                            <thead class="table-light"><tr><th class="ps-3">Producto</th><th class="text-center">Cantidad</th><th class="text-end">P. unitario</th><th class="text-end">Subtotal</th><th></th></tr></thead>
+                            <tbody id="carrito-lista"></tbody>
+                        </table>
+                    </div>
+                    <div class="border-top bg-light px-4 py-3 flex-shrink-0" aria-live="polite">
+                        <div class="d-flex justify-content-between mb-1"><span>Sub-Total</span><strong id="subtotal">$ 0,00</strong></div>
+                        <div class="d-flex justify-content-between mb-1 text-success"><span>Descuento (<span id="descuento-porcentaje">0</span>%)</span><strong id="descuento">$ 0,00</strong></div>
+                        <div class="d-flex justify-content-between mb-2"><span>IVA</span><strong id="iva">$ 0,00</strong></div>
+                        <div class="d-flex justify-content-between border-top pt-2 fs-4 fw-bold"><span>Total</span><span id="total" class="text-primary">$ 0,00</span></div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 px-4 py-3 flex-shrink-0">
+                        <button id="ingresar" type="submit" class="btn btn-success rounded-pill px-4" disabled><i class="bi bi-floppy me-2"></i>Ingresar venta</button>
+                        <button id="limpiar" type="button" class="btn btn-outline-secondary rounded-pill px-4"><i class="bi bi-eraser me-2"></i>Limpiar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @section Scripts {
+        <script src="~/js/venta-edit.js" asp-append-version="true"></script>
+    }

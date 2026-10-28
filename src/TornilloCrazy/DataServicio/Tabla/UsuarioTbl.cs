@@ -85,6 +85,3 @@ public class RolPermisoTbl
 
     public PermisoTbl Permiso { get; set; } = null!;
 }
-
-
-

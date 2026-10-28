@@ -25,7 +25,9 @@ public class FerreteriaDbContext(DbContextOptions<FerreteriaDbContext> options) 
     public DbSet<PermisoTbl> Permisos => Set<PermisoTbl>();
     public DbSet<UsuarioRolTbl> UsuarioRoles => Set<UsuarioRolTbl>();
     public DbSet<RolPermisoTbl> RolPermisos => Set<RolPermisoTbl>();
-
+    public DbSet<VentaTbl> Ventas => Set<VentaTbl>();
+    public DbSet<ClienteTbl> Clientes => Set<ClienteTbl>();
+    public DbSet<VentaStockTbl> VentaStocks => Set<VentaStockTbl>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +86,7 @@ public class FerreteriaDbContext(DbContextOptions<FerreteriaDbContext> options) 
         ConfigurarPermiso(modelBuilder);
         ConfigurarUsuarioRol(modelBuilder);
         ConfigurarRolPermiso(modelBuilder);
+        ConfigurarVentaStock(modelBuilder);
 
 
     }
@@ -164,4 +167,24 @@ public class FerreteriaDbContext(DbContextOptions<FerreteriaDbContext> options) 
                 .HasForeignKey(x => x.PermisoId);
         });
     }
+    private static void ConfigurarVentaStock(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<VentaStockTbl>(entity =>
+        {
+            entity.HasKey(x => new
+            {
+                x.VentaId,
+                x.StockControlId
+            });
+
+            entity.HasOne(x => x.Ventas)
+                .WithMany(x => x.VentaStocks)
+                .HasForeignKey(x => x.VentaId);
+
+            entity.HasOne(x => x.StockControl)
+                .WithMany(x => x.VentaStocks)
+                .HasForeignKey(x => x.StockControlId);
+        });
+    }
+
 }

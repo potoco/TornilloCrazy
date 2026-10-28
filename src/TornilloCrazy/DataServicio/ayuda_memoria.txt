@@ -1,6 +1,6 @@
-﻿Add-Migration usu3 -Project DataServicio -StartupProject TornilloWeb
-Update-Database usu3 -Project DataServicio -StartupProject TornilloWeb
-Remove-Migration usu3 -Project DataServicio -StartupProject TornilloWeb
+﻿Add-Migration stock6 -Project DataServicio -StartupProject TornilloWeb
+Update-Database stock6 -Project DataServicio -StartupProject TornilloWeb
+Remove-Migration stock6 -Project DataServicio -StartupProject TornilloWeb
 
 
 USUARIO de ferretera ( para login en la app web)

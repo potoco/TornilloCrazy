@@ -23,6 +23,30 @@ namespace DataServicio.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("DataServicio.Tabla.ClienteTbl", b =>
+                {
+                    b.Property<int>("ClienteId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClienteId"));
+
+                    b.Property<decimal>("DescuentoPorcentaje")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PersonaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClienteId");
+
+                    b.HasIndex("PersonaId");
+
+                    b.ToTable("Cliente");
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.DireccionTbl", b =>
                 {
                     b.Property<int>("DireccionId")
@@ -394,6 +418,9 @@ namespace DataServicio.Migrations
                     b.Property<string>("AtributosJson")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("CantMinima")
+                        .HasColumnType("int");
+
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
@@ -713,6 +740,9 @@ namespace DataServicio.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("ProductoId")
                         .HasColumnType("int");
 
@@ -850,6 +880,55 @@ namespace DataServicio.Migrations
                     b.ToTable("Usuario");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.VentaStockTbl", b =>
+                {
+                    b.Property<int>("VentaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StockControlId")
+                        .HasColumnType("int");
+
+                    b.HasKey("VentaId", "StockControlId");
+
+                    b.HasIndex("StockControlId");
+
+                    b.ToTable("VentaStock");
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.VentaTbl", b =>
+                {
+                    b.Property<int>("VentaId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VentaId"));
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ClienteDescuentoPorcentaje")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ClienteDescuentoValor")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Iva")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("VentaId");
+
+                    b.ToTable("Venta");
+                });
+
             modelBuilder.Entity("ProveedorTblRubroFerreteriaTbl", b =>
                 {
                     b.Property<int>("ProveedoresProveedorId")
@@ -863,6 +942,17 @@ namespace DataServicio.Migrations
                     b.HasIndex("RubrosRubroFerreteriaId");
 
                     b.ToTable("RubroFerreteriaRelacion", (string)null);
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.ClienteTbl", b =>
+                {
+                    b.HasOne("DataServicio.Tabla.PersonaTbl", "Persona")
+                        .WithMany()
+                        .HasForeignKey("PersonaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Persona");
                 });
 
             modelBuilder.Entity("DataServicio.Tabla.DireccionTbl", b =>
@@ -1019,6 +1109,25 @@ namespace DataServicio.Migrations
                     b.Navigation("Persona");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.VentaStockTbl", b =>
+                {
+                    b.HasOne("DataServicio.Tabla.StockControlTbl", "StockControl")
+                        .WithMany("VentaStocks")
+                        .HasForeignKey("StockControlId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataServicio.Tabla.VentaTbl", "Ventas")
+                        .WithMany("VentaStocks")
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StockControl");
+
+                    b.Navigation("Ventas");
+                });
+
             modelBuilder.Entity("ProveedorTblRubroFerreteriaTbl", b =>
                 {
                     b.HasOne("DataServicio.Tabla.ProveedorTbl", null)
@@ -1067,9 +1176,19 @@ namespace DataServicio.Migrations
                     b.Navigation("UsuarioRoles");
                 });
 
+            modelBuilder.Entity("DataServicio.Tabla.StockControlTbl", b =>
+                {
+                    b.Navigation("VentaStocks");
+                });
+
             modelBuilder.Entity("DataServicio.Tabla.UsuarioTbl", b =>
                 {
                     b.Navigation("UsuarioRoles");
+                });
+
+            modelBuilder.Entity("DataServicio.Tabla.VentaTbl", b =>
+                {
+                    b.Navigation("VentaStocks");
                 });
 #pragma warning restore 612, 618
         }

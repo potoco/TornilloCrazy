@@ -15,6 +15,7 @@ public class ProductoTbl
     [MaxLength(240)] public string Sinonimos { get; set; } = "";
     [MaxLength(30)] public string? Codigo { get; set; }
     public int Cantidad { get; set; } = 0;
+    public int CantMinima { get; set; } = 0;
     public decimal PrecioUnitario { get; set; } = 0;
     public int Estado { get; set; } = 0;
 
@@ -30,10 +31,6 @@ public class ProductoTbl
 
     [Column(TypeName = "nvarchar(max)")]
     public string? DescripcionDetallada { get; set; }
-
     public virtual ICollection<ProveedorMaestroTbl> ProveedorMaestros { get; set; } = new List<ProveedorMaestroTbl>();
-
     [NotMapped] public string PrecioUnitarioFormatted { get => $"$ {PrecioUnitario.ToString("#,###,##0")}"; }
-
-
 }

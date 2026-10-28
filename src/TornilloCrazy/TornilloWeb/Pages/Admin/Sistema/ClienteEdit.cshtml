@@ -1,0 +1,285 @@
+@page
+@model TornilloWeb.Pages.Admin.Sistema.ClienteEditModel
+@{
+    ViewData["Title"] = "CRUD Clientes";
+}
+
+<div class="d-flex flex-wrap align-items-baseline gap-2 mb-4">
+    <h1 class="h3 fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Clientes</h1>
+    <span class="text-muted small">Gestión de clientes, direcciones y datos de contacto.</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3 px-4">
+                <span class="fw-semibold"><i class="bi bi-list-ul me-2"></i>Clientes</span>
+                <span class="badge bg-secondary rounded-pill">@Model.Clientes.Count</span>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Clientes.Count == 0)
+                {
+                    <div class="p-4 text-muted text-center">
+                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay clientes activos.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr class="text-uppercase small text-muted">
+                                    <th class="ps-4">CUIT</th>
+                                    <th>Nombre / Razón social</th>
+                                    <th class="text-end">Desc. %</th>
+                                    <th class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Clientes)
+                                {
+                                    var activo = Model.ClienteId == item.ClienteId;
+                                    <tr class="@(activo ? "table-primary" : string.Empty)">
+                                        <td class="ps-4">@item.CUIT</td>
+                                        <td class="fw-semibold">@item.RazonSocial</td>
+                                        <td class="text-end">@item.DescuentoPorcentaje.ToString("0.##")%</td>
+                                        <td class="text-end pe-4">
+                                            <a asp-page="./ClienteEdit" asp-route-clienteId="@item.ClienteId" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <form method="post" asp-page-handler="EliminarCliente" class="d-inline">
+                                                <input type="hidden" name="clienteId" value="@item.ClienteId" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" onclick="return confirm('¿Desactivar cliente?');">
+                                                    <i class="bi bi-person-x"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+        @if (!string.IsNullOrWhiteSpace(Model.MensajeOk))
+        {
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill"></i>
+                <div>@Model.MensajeOk</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.MensajeError))
+        {
+            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div>@Model.MensajeError</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+        }
+
+        <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-primary text-white fw-semibold py-3 px-4">
+                <i class="bi @(Model.EsEdicion ? "bi-pencil-square" : "bi-plus-circle") me-2"></i>@(Model.EsEdicion ? "Editar cliente" : "Nuevo cliente")
+            </div>
+            <div class="card-body p-4">
+                <form method="post" asp-page-handler="@(Model.EsEdicion ? "Actualizar" : "Crear")" class="row g-3">
+                    @if (Model.EsEdicion)
+                    {
+                        <input type="hidden" name="clienteId" value="@Model.ClienteSeleccionado!.ClienteId" />
+                    }
+
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                    <div class="col-12 col-md-4">
+                        <label asp-for="ClienteInput.CUIT" class="form-label"></label>
+                        <input asp-for="ClienteInput.CUIT" class="form-control" />
+                        <span asp-validation-for="ClienteInput.CUIT" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12 col-md-8">
+                        <label asp-for="ClienteInput.RazonSocial" class="form-label"></label>
+                        <input asp-for="ClienteInput.RazonSocial" class="form-control" />
+                        <span asp-validation-for="ClienteInput.RazonSocial" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label asp-for="ClienteInput.DescuentoPorcentaje" class="form-label"></label>
+                        <input asp-for="ClienteInput.DescuentoPorcentaje" class="form-control" type="number" min="0" max="100" step="0.01" />
+                        <span asp-validation-for="ClienteInput.DescuentoPorcentaje" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2 pt-2">
+                        <button type="submit" class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                            <i class="bi @(Model.EsEdicion ? "bi-floppy" : "bi-plus-circle")"></i>
+                            @(Model.EsEdicion ? "Guardar cambios" : "Crear cliente")
+                        </button>
+                        <a asp-page="./ClienteEdit" class="btn btn-outline-secondary rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-eraser"></i>
+                            Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.EsEdicion)
+        {
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow rounded-4 overflow-hidden">
+                        <div class="card-header fw-semibold bg-light py-3 px-4"><i class="bi bi-geo-alt me-2 text-primary"></i>Direcciones</div>
+                        <div class="card-body p-4">
+                            <form method="post" asp-page-handler="AgregarDireccion" class="row g-2 align-items-center bg-light rounded-3 p-3 mb-4">
+                                <input type="hidden" name="clienteId" value="@Model.ClienteSeleccionado!.ClienteId" />
+                                <div class="col-12 col-md-4">
+                                    <input asp-for="DireccionInput.Calle" class="form-control form-control-sm" placeholder="Calle" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <input asp-for="DireccionInput.Numero" class="form-control form-control-sm" placeholder="Número" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <input asp-for="DireccionInput.Piso" class="form-control form-control-sm" placeholder="Piso" />
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <input asp-for="DireccionInput.Depto" class="form-control form-control-sm" placeholder="Depto" />
+                                </div>
+                                <div class="col-6 col-md-2 d-grid">
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
+                                        <i class="bi bi-plus-circle"></i>
+                                    </button>
+                                </div>
+                            </form>
+
+                            @if (Model.ClienteSeleccionado!.Direcciones.Count == 0)
+                            {
+                                <p class="text-muted text-center mb-0"><i class="bi bi-inbox me-1"></i>Sin direcciones cargadas.</p>
+                            }
+                            else
+                            {
+                                @foreach (var direccion in Model.ClienteSeleccionado.Direcciones)
+                                {
+                                    <form method="post" asp-page-handler="ActualizarDireccion" class="row g-2 align-items-center border rounded-3 p-2 mb-2">
+                                        <input type="hidden" name="clienteId" value="@Model.ClienteSeleccionado.ClienteId" />
+                                        <input type="hidden" name="direccionId" value="@direccion.DireccionId" />
+                                        <div class="col-12 col-md-4">
+                                            <input type="text" name="calle" value="@direccion.Calle" class="form-control form-control-sm" />
+                                        </div>
+                                        <div class="col-6 col-md-2">
+                                            <input type="text" name="numero" value="@direccion.Numero" class="form-control form-control-sm" />
+                                        </div>
+                                        <div class="col-6 col-md-2">
+                                            <input type="text" name="piso" value="@direccion.Piso" class="form-control form-control-sm" />
+                                        </div>
+                                        <div class="col-6 col-md-2">
+                                            <input type="text" name="depto" value="@direccion.Depto" class="form-control form-control-sm" />
+                                        </div>
+                                        <div class="col-6 col-md-2 d-flex gap-2">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                                                <i class="bi bi-floppy"></i>
+                                            </button>
+                                            <button type="submit" formaction="?handler=EliminarDireccion" formmethod="post" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" onclick="return confirm('¿Eliminar dirección?');">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6">
+                    <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+                        <div class="card-header fw-semibold bg-light py-3 px-4"><i class="bi bi-telephone me-2 text-primary"></i>Teléfonos</div>
+                        <div class="card-body p-4">
+                            <form method="post" asp-page-handler="AgregarTelefono" class="row g-2 align-items-center bg-light rounded-3 p-3 mb-4">
+                                <input type="hidden" name="clienteId" value="@Model.ClienteSeleccionado!.ClienteId" />
+                                <div class="col-8">
+                                    <input asp-for="TelefonoInput.Telefono" class="form-control form-control-sm" placeholder="Nuevo teléfono" />
+                                </div>
+                                <div class="col-4 d-grid">
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
+                                        <i class="bi bi-plus-circle"></i>
+                                    </button>
+                                </div>
+                            </form>
+
+                            @if (Model.ClienteSeleccionado!.Telefonos.Count == 0)
+                            {
+                                <p class="text-muted text-center mb-0"><i class="bi bi-inbox me-1"></i>Sin teléfonos cargados.</p>
+                            }
+                            else
+                            {
+                                @foreach (var telefono in Model.ClienteSeleccionado.Telefonos)
+                                {
+                                    <form method="post" asp-page-handler="ActualizarTelefono" class="input-group input-group-sm mb-2">
+                                        <input type="hidden" name="clienteId" value="@Model.ClienteSeleccionado.ClienteId" />
+                                        <input type="hidden" name="telefonoId" value="@telefono.TelefonoId" />
+                                        <input type="text" name="telefono" class="form-control" value="@telefono.Telefono" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-floppy"></i>
+                                        </button>
+                                        <button type="submit" formaction="?handler=EliminarTelefono" formmethod="post" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" onclick="return confirm('¿Eliminar teléfono?');">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6">
+                    <div class="card border-0 shadow rounded-4 overflow-hidden h-100">
+                        <div class="card-header fw-semibold bg-light py-3 px-4"><i class="bi bi-envelope me-2 text-primary"></i>Emails</div>
+                        <div class="card-body p-4">
+                            <form method="post" asp-page-handler="AgregarEmail" class="row g-2 align-items-center bg-light rounded-3 p-3 mb-4">
+                                <input type="hidden" name="clienteId" value="@Model.ClienteSeleccionado!.ClienteId" />
+                                <div class="col-8">
+                                    <input asp-for="EmailInput.Email" class="form-control form-control-sm" placeholder="Nuevo email" />
+                                </div>
+                                <div class="col-4 d-grid">
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
+                                        <i class="bi bi-plus-circle"></i>
+                                    </button>
+                                </div>
+                            </form>
+
+                            @if (Model.ClienteSeleccionado!.Emails.Count == 0)
+                            {
+                                <p class="text-muted text-center mb-0"><i class="bi bi-inbox me-1"></i>Sin emails cargados.</p>
+                            }
+                            else
+                            {
+                                @foreach (var email in Model.ClienteSeleccionado.Emails)
+                                {
+                                    <form method="post" asp-page-handler="ActualizarEmail" class="input-group input-group-sm mb-2">
+                                        <input type="hidden" name="clienteId" value="@Model.ClienteSeleccionado.ClienteId" />
+                                        <input type="hidden" name="emailId" value="@email.EmailId" />
+                                        <input type="email" name="email" class="form-control" value="@email.Email" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-floppy"></i>
+                                        </button>
+                                        <button type="submit" formaction="?handler=EliminarEmail" formmethod="post" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" onclick="return confirm('¿Eliminar email?');">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

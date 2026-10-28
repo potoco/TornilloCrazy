@@ -36,7 +36,7 @@
             <button class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#@menuId" aria-controls="@menuId" aria-label="Abrir menú">
                 <i class="bi bi-list"></i>
             </button>
-            <a class="navbar-brand ms-2" asp-area="" asp-page="/Admin/Index">
+            <a class="navbar-brand ms-2" asp-area="" asp-page="/Admin/Operacion/VentaEdit">
                 <i class="bi bi-nut me-1"></i>Tornillo Crazy
             </a>
         </div>
@@ -44,7 +44,7 @@
 
     <aside id="@menuId" class="app-sidebar offcanvas-lg offcanvas-start bg-dark text-white d-flex flex-column" tabindex="-1" aria-labelledby="@(menuId)Label">
         <div class="d-flex align-items-center justify-content-between gap-2 p-3 border-bottom border-secondary">
-            <a class="navbar-brand text-white fw-bold text-truncate mb-0" asp-area="" asp-page="/Admin/Index" id="@(menuId)Label">
+            <a class="navbar-brand text-white fw-bold text-truncate mb-0" asp-area="" asp-page="/Admin/Operacion/VentaEdit" id="@(menuId)Label">
                 <i class="bi bi-nut me-2"></i><span class="sidebar-text">Tornillo Crazy</span>
             </a>
                 <button type="button" class="btn btn-sm btn-outline-light d-none d-lg-inline-flex" aria-label="Colapsar menu lat izq">
@@ -55,8 +55,8 @@
 
         <ul class="nav nav-pills flex-column gap-1 p-3 flex-grow-1">
             <li class="nav-item">
-                <a class="nav-link text-white-50 fw-semibold text-uppercase small" asp-area="" asp-page="/Admin/Index">
-                    <i class="bi bi-speedometer2 me-2"></i><span class="sidebar-text">Inicio</span>
+                <a class="nav-link text-white-50 fw-semibold text-uppercase small" asp-area="" asp-page="/Admin/Operacion/VentaEdit">
+                    <i class="bi bi-speedometer2 me-2"></i><span class="sidebar-text">Venta</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -95,6 +95,7 @@
                 <div class="collapse sidebar-submenu" id="menuConfiguracion">
                     <ul class="nav flex-column ms-4 border-start border-secondary ps-2 my-1">
                         <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/Sistema/UsuarioEdit">Usuarios</a></li>
+                        <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/Sistema/ClienteEdit">Clientes</a></li>
                         <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/Sistema/RolPermisoEdit">Roles - Permisos</a></li>
                         <li><a class="nav-link text-white-50 py-1" asp-area="" asp-page="/Admin/Sistema/GeneralEdit">General</a></li>
                     </ul>

@@ -12,5 +12,8 @@ public class StockControlTbl
     public DateTime Fecha { get; set; }
     public int ProductoId { get; set; }
     public int Cantidad { get; set; }
+    public decimal PrecioUnitario { get; set; } // se lleva el precio unitario del producto al momento de la alteración
     public string CodigoAlteracion { get; set; } = "";
+    public ICollection<VentaStockTbl> VentaStocks { get; set; } = new List<VentaStockTbl>();
+
 }

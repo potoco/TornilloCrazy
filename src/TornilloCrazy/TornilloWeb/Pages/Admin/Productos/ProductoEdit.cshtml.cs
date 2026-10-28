@@ -25,6 +25,9 @@ namespace TornilloWeb.Pages.Admin.Productos
             public string? Codigo { get; set; }
 
             [Range(0, int.MaxValue)]
+            public int CantMinima { get; set; }
+
+            [Range(0, int.MaxValue)]
             public int Cantidad { get; set; }
 
             [Range(0, 999999999)]
@@ -94,6 +97,7 @@ namespace TornilloWeb.Pages.Admin.Productos
                 Sinonimos = ProductoInput.Sinonimos,
                 Codigo = ProductoInput.Codigo,
                 Cantidad = ProductoInput.Cantidad,
+                CantMinima = ProductoInput.CantMinima,  
                 PrecioUnitario = ProductoInput.PrecioUnitario,
                 DescripcionDetallada = ProductoInput.DescripcionDetallada,
                 Estado = 0
@@ -127,6 +131,7 @@ namespace TornilloWeb.Pages.Admin.Productos
             producto.Sinonimos = ProductoInput.Sinonimos;
             producto.Codigo = ProductoInput.Codigo;
             producto.Cantidad = ProductoInput.Cantidad;
+            producto.CantMinima = ProductoInput.CantMinima; 
             producto.PrecioUnitario = ProductoInput.PrecioUnitario;
             producto.DescripcionDetallada = ProductoInput.DescripcionDetallada;
 

@@ -119,10 +119,12 @@ try
     builder.Services.AddDbContext<FerreteriaDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
     builder.Services.AddScoped<ProveedorService>();
+    builder.Services.AddScoped<ClienteService>();
     builder.Services.AddScoped<PersonaService>();
     builder.Services.AddScoped<UsuarioService>();
     builder.Services.AddScoped<RolPersmisoService>();
     builder.Services.AddScoped<ProductoService>();
+    builder.Services.AddScoped<VentaService>();
     builder.Services.AddScoped<ProcesarListaPrecioServicio>();
     builder.Services.AddScoped<InstruccionesTextoHelper>();
     builder.Services.AddSingleton<ClienteWebPotoco>();
