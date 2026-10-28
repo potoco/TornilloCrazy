@@ -6,6 +6,11 @@
     const round = value => Math.round((value + Number.EPSILON) * 100) / 100;
     const form = $('venta-form');
     const telefono = window.matchMedia('(max-width: 575.98px)');
+    $('venta-detalle-toggle').addEventListener('click', () => {
+        const abierto = $('venta-detalle-contenedor').classList.toggle('venta-detalle-abierto');
+        $('venta-detalle-toggle').setAttribute('aria-expanded', String(abierto));
+        $('venta-detalle-toggle').textContent = abierto ? 'Ocultar detalle del producto' : 'Ver detalle del producto';
+    });
     const tabs = [$('venta-tab-productos'), $('venta-tab-carrito')];
     let tabActivo = form.dataset.esPost === 'true' && form.dataset.ventaIngresada !== 'true' ? 1 : 0;
     function mostrarTab(indice, enfocar = false) {
@@ -85,11 +90,11 @@
     function render(persistir = true) {
         $('carrito-lista').innerHTML = carrito.length ? carrito.map(p => `<tr>
             <td class="ps-3 venta-nombre fw-semibold">${escape(p.nombre)}</td>
-            <td><div class="d-flex align-items-center justify-content-center gap-1">
+            <td data-label="Cantidad"><div class="d-flex align-items-center justify-content-center gap-1">
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-id="${p.productoId}" data-action="menos" aria-label="Restar cantidad de ${escape(p.nombre)}">−</button>
                 <input class="form-control form-control-sm venta-cantidad" type="number" min="1" max="${p.stock}" value="${p.cantidad}" data-id="${p.productoId}" aria-label="Cantidad de ${escape(p.nombre)}" />
                 <button type="button" class="btn btn-sm btn-outline-primary" data-id="${p.productoId}" data-action="mas" aria-label="Sumar cantidad de ${escape(p.nombre)}">+</button>
-            </div></td><td class="text-end text-nowrap">${money(p.precio)}</td><td class="text-end text-nowrap">${money(round(p.precio * p.cantidad))}</td>
+            </div></td><td class="text-end text-nowrap" data-label="P. unitario">${money(p.precio)}</td><td class="text-end text-nowrap" data-label="Subtotal">${money(round(p.precio * p.cantidad))}</td>
             <td><button type="button" class="btn btn-sm btn-outline-danger" data-id="${p.productoId}" data-action="quitar" aria-label="Quitar ${escape(p.nombre)}"><i class="bi bi-trash"></i></button></td></tr>`).join('') : '<tr><td colspan="5" class="text-center text-muted p-5"><i class="bi bi-cart3 fs-1 d-block mb-2"></i>Tu carrito está vacío.<br>Agregá productos desde el buscador.</td></tr>';
         const tasa = Number($('IvaPorcentaje').value) || 0;
         const porcentajeDescuento = Number($('ClienteId').selectedOptions[0]?.dataset.descuento) || 0;

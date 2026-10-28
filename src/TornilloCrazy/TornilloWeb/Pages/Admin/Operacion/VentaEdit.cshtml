@@ -30,6 +30,27 @@
     .venta-lineas thead { position: sticky; top: 0; z-index: 1; }
     .venta-cantidad { width: 65px; text-align: center; }
     .venta-nombre { min-width: 150px; overflow-wrap: anywhere; }
+    .venta-detalle-toggle { display: none; }
+    .venta-detalle-contenedor { display: contents; }
+    @@media (max-width: 575.98px) {
+        .venta-catalogo { grid-template-rows: minmax(0, 1fr) auto; }
+        .venta-catalogo:has(.venta-detalle-abierto) { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
+        .venta-detalle-contenedor { display: flex; flex-direction: column; min-height: 0; }
+        .venta-detalle-toggle { display: block; flex-shrink: 0; min-height: 44px; }
+        .venta-detalle-contenedor:not(.venta-detalle-abierto) > .venta-detalle { display: none; }
+        .venta-cantidad { width: 40px; min-width: 40px; padding-inline: 2px; appearance: textfield; }
+        .venta-cantidad::-webkit-inner-spin-button, .venta-cantidad::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .venta-lineas table, .venta-lineas tbody { display: block; width: 100%; }
+        .venta-lineas thead { display: none; }
+        #carrito-lista > tr { display: grid; grid-template-columns: 104px minmax(0, 1fr) minmax(0, 1fr); position: relative; padding: .75rem; gap: .5rem; border-bottom: 1px solid var(--bs-border-color); }
+        #carrito-lista > tr > td { padding: 0; border: 0; min-width: 0; }
+        #carrito-lista .venta-nombre { grid-column: 1 / -1; padding: 0 36px 0 0 !important; }
+        #carrito-lista > tr > td:last-child:not([colspan]) { position: absolute; top: .5rem; right: .75rem; }
+        #carrito-lista > tr > td[colspan] { grid-column: 1 / -1; }
+        #carrito-lista > tr > td[data-label]::before { content: attr(data-label); display: block; font-size: .7rem; color: var(--bs-secondary-color); margin-bottom: .25rem; }
+        #carrito-lista > tr > td.text-nowrap { white-space: normal !important; overflow-wrap: anywhere; }
+        #carrito-lista .btn { padding-inline: .375rem; }
+    }
 </style>
 <div class="d-flex flex-wrap align-items-baseline gap-2 mb-4">
     <h1 class="h3 fw-bold mb-0"><i class="bi bi-cart3 text-primary me-2"></i>Venta</h1>
@@ -70,7 +91,10 @@
                         <button id="siguiente" type="button" class="btn btn-sm btn-outline-secondary" aria-label="Página siguiente"><i class="bi bi-chevron-right"></i></button>
                     </div>
                     </div>
-                    <div id="detalle" class="venta-detalle p-3"><p class="text-muted text-center mt-4">Seleccioná un producto para ver su descripción y foto.</p></div>
+                    <div class="venta-detalle-contenedor" id="venta-detalle-contenedor">
+                        <button id="venta-detalle-toggle" type="button" class="venta-detalle-toggle btn btn-light border-top rounded-0 text-start px-3" aria-expanded="false" aria-controls="detalle">Ver detalle del producto</button>
+                        <div id="detalle" class="venta-detalle p-3"><p class="text-muted text-center mt-4">Seleccioná un producto para ver su descripción y foto.</p></div>
+                    </div>
                     </div>
                 </div>
             </div>
