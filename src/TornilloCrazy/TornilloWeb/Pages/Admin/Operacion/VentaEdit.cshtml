@@ -12,6 +12,13 @@
     @@media (max-width: 991.98px) {
         #venta-paneles { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: .75rem; }
     }
+    .venta-tabs { display: none; }
+    @@media (max-width: 575.98px) {
+        .venta-tabs { display: flex; gap: .5rem; margin-bottom: .75rem; }
+        .venta-tabs .nav-link { flex: 1; min-height: 44px; }
+        #venta-paneles { grid-template-rows: minmax(0, 1fr); gap: 0; }
+        #venta-paneles > .venta-panel-inactivo { display: none; }
+    }
     .venta-catalogo { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); flex: 1; min-height: 0; }
     .venta-busqueda { display: flex; flex-direction: column; min-height: 0; }
     .venta-busqueda > form, .venta-paginacion, .venta-panel > .card-header { flex-shrink: 0; }
@@ -34,8 +41,12 @@
 }
 <div asp-validation-summary="All" class="text-danger"></div>
 <div id="venta-error" class="alert alert-danger d-none" role="alert"></div>
+<div class="venta-tabs nav nav-pills" role="tablist" aria-label="Secciones de la venta">
+    <button id="venta-tab-productos" class="nav-link active" type="button" role="tab" aria-controls="venta-productos-panel" aria-selected="true">Productos</button>
+    <button id="venta-tab-carrito" class="nav-link" type="button" role="tab" aria-controls="venta-carrito-panel" aria-selected="false" tabindex="-1">Carrito <span id="carrito-tab-cuenta" class="badge bg-primary rounded-pill ms-1" aria-live="polite">0</span></button>
+</div>
 <div class="row g-4" id="venta-paneles">
-    <div class="col-12 col-lg-7">
+    <div class="col-12 col-lg-7" id="venta-productos-panel">
         <div class="card border-0 shadow rounded-4 overflow-hidden venta-panel">
             <div class="card-header bg-dark text-white d-flex justify-content-between py-3 px-4">
                 <span class="fw-semibold"><i class="bi bi-list-ul me-2"></i>Productos</span>
@@ -63,7 +74,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-lg-5">
+            <div class="col-12 col-lg-5 venta-panel-inactivo" id="venta-carrito-panel">
                 <form method="post" asp-page-handler="Ingresar" id="venta-form" class="card border-0 shadow rounded-4 overflow-hidden venta-panel"
                       data-borrador-usuario="@(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name ?? "usuario")"
                       data-venta-ingresada="@(Model.VentaIngresada ? "true" : "false")"

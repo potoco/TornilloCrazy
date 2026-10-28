@@ -5,6 +5,43 @@
     const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const round = value => Math.round((value + Number.EPSILON) * 100) / 100;
     const form = $('venta-form');
+    const telefono = window.matchMedia('(max-width: 575.98px)');
+    const tabs = [$('venta-tab-productos'), $('venta-tab-carrito')];
+    let tabActivo = form.dataset.esPost === 'true' && form.dataset.ventaIngresada !== 'true' ? 1 : 0;
+    function mostrarTab(indice, enfocar = false) {
+        tabActivo = indice;
+        tabs.forEach((tab, i) => {
+            const activo = i === indice;
+            tab.classList.toggle('active', activo);
+            tab.setAttribute('aria-selected', String(activo));
+            tab.tabIndex = activo ? 0 : -1;
+            const panel = $(tab.getAttribute('aria-controls'));
+            panel.classList.toggle('venta-panel-inactivo', !activo);
+            if (telefono.matches) {
+                panel.setAttribute('role', 'tabpanel');
+                panel.setAttribute('aria-labelledby', tab.id);
+            } else {
+                panel.removeAttribute('role');
+                panel.removeAttribute('aria-labelledby');
+            }
+        });
+        if (enfocar) tabs[indice].focus();
+    }
+    tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => mostrarTab(i));
+        tab.addEventListener('keydown', event => {
+            let indice;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') indice = 1 - i;
+            else if (event.key === 'Home') indice = 0;
+            else if (event.key === 'End') indice = 1;
+            else return;
+            event.preventDefault();
+            mostrarTab(indice, true);
+        });
+    });
+    telefono.addEventListener('change', () => mostrarTab(tabActivo));
+    form.addEventListener('invalid', () => { if (telefono.matches) mostrarTab(1); }, true);
+    mostrarTab(tabActivo);
     const claveBorrador = `tornillo:venta:borrador:${location.pathname}:${form.dataset.borradorUsuario}`;
     let conservarBorrador = false;
     function guardarBorrador() {
@@ -67,6 +104,7 @@
         $('descuento').textContent = money(-descuento);
         $('subtotal').textContent = money(subtotal); $('iva').textContent = money(iva); $('total').textContent = money(subtotal - descuento + iva);
         $('carrito-cuenta').textContent = carrito.length;
+        $('carrito-tab-cuenta').textContent = carrito.length;
         $('ingresar').disabled = !carrito.length;
         $('CarritoJson').value = JSON.stringify(carrito);
         if (persistir) guardarBorrador();

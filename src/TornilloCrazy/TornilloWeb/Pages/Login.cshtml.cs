@@ -79,7 +79,7 @@ public class LoginModel(FerreteriaDbContext dbContext) : PageModel
             return LocalRedirect(ReturnUrl);
         }
 
-        return RedirectToPage("/Admin/Index");
+        return RedirectToPage("/Admin/Operacion/VentaEdit");
     }
 
     public sealed class LoginInputModel
