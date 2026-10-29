@@ -14,6 +14,7 @@
     }
     .venta-tabs { display: none; }
     @@media (max-width: 575.98px) {
+        .venta-panel > .card-header { display: none !important; }
         .venta-tabs { display: flex; gap: .5rem; margin-bottom: .75rem; }
         .venta-tabs .nav-link { flex: 1; min-height: 44px; }
         #venta-paneles { grid-template-rows: minmax(0, 1fr); gap: 0; }
@@ -42,14 +43,21 @@
         .venta-cantidad::-webkit-inner-spin-button, .venta-cantidad::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         .venta-lineas table, .venta-lineas tbody { display: block; width: 100%; }
         .venta-lineas thead { display: none; }
-        #carrito-lista > tr { display: grid; grid-template-columns: 104px minmax(0, 1fr) minmax(0, 1fr); position: relative; padding: .75rem; gap: .5rem; border-bottom: 1px solid var(--bs-border-color); }
+        #carrito-lista > tr { display: grid; grid-template-columns: minmax(104px, 1fr) minmax(0, 1fr); position: relative; padding: 1rem; gap: .75rem 1rem; border-bottom: 1px solid var(--bs-border-color); }
         #carrito-lista > tr > td { padding: 0; border: 0; min-width: 0; }
-        #carrito-lista .venta-nombre { grid-column: 1 / -1; padding: 0 36px 0 0 !important; }
-        #carrito-lista > tr > td:last-child:not([colspan]) { position: absolute; top: .5rem; right: .75rem; }
+        #carrito-lista .venta-nombre { grid-column: 1 / -1; padding: 0 32px 0 0 !important; font-size: 1rem; font-weight: 700 !important; line-height: 1.4; color: var(--bs-emphasis-color); }
+        #carrito-lista > tr > td[data-label="Cantidad"] { grid-column: 1; grid-row: 2 / 4; align-self: end; }
+        #carrito-lista > tr > td[data-label="Cantidad"] > div { justify-content: flex-start !important; }
+        #carrito-lista > tr > td[data-label="P. unitario"] { grid-column: 2; font-size: 1rem; font-weight: 600; }
+        #carrito-lista > tr > td[data-label="Subtotal"] { grid-column: 2; font-size: 1.2rem; font-weight: 700; color: var(--bs-primary); }
+        #carrito-lista > tr > td:last-child:not([colspan]) { position: absolute; top: .75rem; right: .75rem; }
+        #carrito-lista > tr > td:last-child .btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; font-size: .8rem; border-color: transparent; }
         #carrito-lista > tr > td[colspan] { grid-column: 1 / -1; }
-        #carrito-lista > tr > td[data-label]::before { content: attr(data-label); display: block; font-size: .7rem; color: var(--bs-secondary-color); margin-bottom: .25rem; }
+        #carrito-lista > tr > td[data-label]::before { content: attr(data-label); display: block; font-size: .75rem; font-weight: 600; color: var(--bs-secondary-color); margin-bottom: .25rem; }
         #carrito-lista > tr > td.text-nowrap { white-space: normal !important; overflow-wrap: anywhere; }
         #carrito-lista .btn { padding-inline: .375rem; }
+        #carrito-lista > tr > td[data-label="Cantidad"] .btn { min-width: 30px; min-height: 36px; }
+        #carrito-lista .venta-cantidad { height: 36px; font-size: 1rem; font-weight: 600; }
     }
 </style>
 <div class="d-flex flex-wrap align-items-baseline gap-2 mb-4">
